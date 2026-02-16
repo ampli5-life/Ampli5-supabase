@@ -16,8 +16,11 @@ public class Subscription {
     @Column(name = "user_id", nullable = false)
     private UUID userId;
 
-    @Column(name = "paypal_subscription_id", nullable = false, unique = true)
+    @Column(name = "paypal_subscription_id", unique = true)
     private String paypalSubscriptionId;
+
+    @Column(name = "stripe_subscription_id", unique = true)
+    private String stripeSubscriptionId;
 
     @Column(name = "plan_id", nullable = false)
     private String planId;
@@ -63,6 +66,14 @@ public class Subscription {
 
     public void setPaypalSubscriptionId(String paypalSubscriptionId) {
         this.paypalSubscriptionId = paypalSubscriptionId;
+    }
+
+    public String getStripeSubscriptionId() {
+        return stripeSubscriptionId;
+    }
+
+    public void setStripeSubscriptionId(String stripeSubscriptionId) {
+        this.stripeSubscriptionId = stripeSubscriptionId;
     }
 
     public String getPlanId() {

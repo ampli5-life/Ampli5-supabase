@@ -9,4 +9,6 @@ public interface SubscriptionRepository extends JpaRepository<Subscription, UUID
     Optional<Subscription> findByUserIdAndStatus(UUID userId, String status);
 
     Optional<Subscription> findByPaypalSubscriptionId(String paypalSubscriptionId);
+
+    Optional<Subscription> findByStripeSubscriptionId(String stripeSubscriptionId);
 }

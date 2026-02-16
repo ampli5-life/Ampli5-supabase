@@ -107,17 +107,21 @@ export async function createSubscription(
   });
 }
 
-export async function confirmSubscription(subscriptionId: string): Promise<{
+export async function confirmSubscription(subscriptionIdOrSessionId: string): Promise<{
   success: boolean;
   plan: string;
   startDate: string;
   endDate: string;
 }> {
+  const body =
+    subscriptionIdOrSessionId.startsWith("cs_")
+      ? { sessionId: subscriptionIdOrSessionId }
+      : { subscriptionId: subscriptionIdOrSessionId };
   return apiFetch<{ success: boolean; plan: string; startDate: string; endDate: string }>(
     "/subscriptions/confirm",
     {
       method: "POST",
-      body: JSON.stringify({ subscriptionId }),
+      body: JSON.stringify(body),
     }
   );
 }

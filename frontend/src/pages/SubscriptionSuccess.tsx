@@ -15,12 +15,13 @@ const SubscriptionSuccess = () => {
     const hash = window.location.hash.replace(/^#/, "");
     const hashParams = new URLSearchParams(hash);
     const fromQuery = (name: string) => searchParams.get(name) || hashParams.get(name);
+    const sessionId = fromQuery("session_id");
     const subscriptionId =
-      fromQuery("subscription_id") || fromQuery("token") || fromQuery("ba_token");
+      sessionId || fromQuery("subscription_id") || fromQuery("token") || fromQuery("ba_token");
     if (!subscriptionId) {
       setStatus("error");
       setMessage(
-        "Missing subscription ID. Did you complete the PayPal approval? Return to the app and try subscribing again."
+        "Missing checkout session. Did you complete the checkout? Return to the app and try subscribing again."
       );
       return;
     }

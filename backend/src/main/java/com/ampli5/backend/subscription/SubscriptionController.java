@@ -6,6 +6,8 @@ import java.util.UUID;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
+
 @RestController
 @RequestMapping("/api")
 public class SubscriptionController {
@@ -35,17 +37,6 @@ public class SubscriptionController {
             return ResponseEntity.status(500).body(Map.of("message", e.getMessage()));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
-        } catch (org.springframework.web.client.RestClientException e) {
-            String raw = e.getMessage() != null ? e.getMessage() : "";
-            String msg;
-            if (raw.contains("RESOURCE_NOT_FOUND")) {
-                msg = "PayPal plan not found. Your .env has plan IDs set; ensure the Subscription plans were created in the same PayPal app (and same Sandbox/Live) as your Client ID. In developer.paypal.com: use the same account for Apps & Credentials and for Products & Services → Subscription plans, then copy the Plan IDs again into .env and restart the backend.";
-            } else if (raw.contains("401") || raw.contains("Unauthorized")) {
-                msg = "PayPal 401 Unauthorized. Check PAYPAL_CLIENT_ID and PAYPAL_CLIENT_SECRET in .env: they must be the credentials for the same environment (Live or Sandbox) as PAYPAL_MODE. In developer.paypal.com, open the correct app, click Show next to Secret, copy the full Client ID and Secret with no extra spaces, update .env, and restart the backend.";
-            } else {
-                msg = "PayPal error: " + (raw.isEmpty() ? "Unknown" : raw);
-            }
-            return ResponseEntity.status(502).body(Map.of("message", msg));
         }
     }
 
@@ -54,13 +45,15 @@ public class SubscriptionController {
         if (principal == null) {
             return ResponseEntity.status(401).body(Map.of("message", "Authentication required"));
         }
+        String sessionId = body != null ? body.get("sessionId") : null;
         String subscriptionId = body != null ? body.get("subscriptionId") : null;
-        if (subscriptionId == null || subscriptionId.isBlank()) {
-            return ResponseEntity.badRequest().body(Map.of("message", "subscriptionId is required"));
+        String id = (sessionId != null && !sessionId.isBlank()) ? sessionId : subscriptionId;
+        if (id == null || id.isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("message", "sessionId is required"));
         }
         UUID userId = UUID.fromString(principal.getName());
         try {
-            SubscriptionService.ConfirmSubscriptionResponse resp = subscriptionService.confirmSubscription(userId, subscriptionId);
+            SubscriptionService.ConfirmSubscriptionResponse resp = subscriptionService.confirmSubscription(userId, id);
             return ResponseEntity.ok(Map.of(
                     "success", resp.success(),
                     "plan", resp.planId() != null ? resp.planId() : "",
@@ -86,13 +79,14 @@ public class SubscriptionController {
                 "endDate", resp.endDate() != null ? resp.endDate().toString() : ""));
     }
 
-    @PostMapping("/paypal/webhook")
-    public ResponseEntity<Void> webhook(@RequestBody Map<String, Object> payload) {
+    @PostMapping(value = "/stripe/webhook", consumes = APPLICATION_JSON_VALUE)
+    public ResponseEntity<Void> stripeWebhook(@RequestBody byte[] payload, @RequestHeader(value = "Stripe-Signature", required = false) String signature) {
         try {
-            subscriptionService.handleWebhook(payload);
+            subscriptionService.handleStripeWebhook(payload, signature != null ? signature : "");
         } catch (Exception e) {
-            // Log but return 200 to avoid retries
+            return ResponseEntity.badRequest().build();
         }
         return ResponseEntity.ok().build();
     }
+
 }

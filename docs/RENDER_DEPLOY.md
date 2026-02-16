@@ -31,13 +31,12 @@ In the backend service → **Environment**:
 | Key | Description |
 |-----|-------------|
 | `GOOGLE_CLIENT_ID` | Google OAuth Client ID (same as in Google Cloud Console). |
-| `PAYPAL_CLIENT_ID` | PayPal app Client ID. |
-| `PAYPAL_CLIENT_SECRET` | PayPal app Client Secret. |
-| `PAYPAL_MODE` | `sandbox` or `live`. |
-| `PAYPAL_PLAN_SILVER` | PayPal plan ID for Silver subscription. |
-| `PAYPAL_PLAN_GOLD` | PayPal plan ID for Gold subscription. |
-| `PAYPAL_RETURN_URL` | e.g. `https://ampli5-frontend.onrender.com/subscription-success`. |
-| `PAYPAL_CANCEL_URL` | e.g. `https://ampli5-frontend.onrender.com/`. |
+| `STRIPE_SECRET_KEY` | Stripe secret key (e.g. `sk_test_...` or `sk_live_...`). |
+| `STRIPE_PRICE_SILVER` | Stripe Price ID for Silver (monthly). |
+| `STRIPE_PRICE_GOLD` | Stripe Price ID for Gold (yearly). |
+| `STRIPE_WEBHOOK_SECRET` | Webhook signing secret (`whsec_...`). Webhook URL: `https://your-backend-url/api/stripe/webhook`. |
+| `STRIPE_SUCCESS_URL` | e.g. `https://ampli5-frontend.onrender.com/subscription-success`. |
+| `STRIPE_CANCEL_URL` | e.g. `https://ampli5-frontend.onrender.com/`. |
 | `CORS_ORIGINS` | Frontend URL, e.g. `https://ampli5-frontend.onrender.com` (so the API allows requests from the frontend). |
 | `CONTACT_MAIL_USER` | SMTP user for contact form (optional). |
 | `CONTACT_MAIL_PASSWORD` | SMTP password (optional). |
@@ -52,7 +51,6 @@ In the frontend service → **Environment**:
 | Key | Description |
 |-----|-------------|
 | `VITE_GOOGLE_CLIENT_ID` | Same Google OAuth Client ID (for “Sign in with Google”). |
-| `VITE_PAYPAL_CLIENT_ID` | Same PayPal Client ID (for frontend). |
 | `VITE_API_URL` | **Backend base URL**, e.g. `https://ampli5-backend.onrender.com`. The app will call `/api` on this URL (you can use either `https://ampli5-backend.onrender.com` or `https://ampli5-backend.onrender.com/api`). Required so the SPA calls the correct API. |
 
 Replace `ampli5-backend.onrender.com` and `ampli5-frontend.onrender.com` with the actual URLs Render shows for your backend and frontend services.
@@ -82,13 +80,13 @@ Change the password after first login if desired (via your own flow or directly 
 
 1. Open the **frontend** URL (e.g. `https://ampli5-frontend.onrender.com`).
 2. Test **Sign up** and **Log in** (email and, if configured, Google).
-3. Confirm API calls work (e.g. loading data, subscription flow if you set up PayPal).
+3. Confirm API calls work (e.g. loading data, subscription flow with Stripe).
 4. In the Render Dashboard, check the backend and database for errors or high load.
 
 ## 5. Optional
 
 - **Custom domains**: In each service, add your domain under **Settings** → **Custom Domains**.
-- **PayPal production**: Switch to `live` and set production plan IDs and return/cancel URLs to your production domain.
+- **Stripe production**: Use live keys and set production Price IDs and success/cancel URLs to your production domain.
 - **Branch**: The Blueprint uses the branch you selected; change it in the Blueprint or service settings if you want to deploy another branch.
 
 ## Troubleshooting

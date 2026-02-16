@@ -51,7 +51,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/login", "/api/auth/login/").permitAll()
                         .requestMatchers("/api/auth/register", "/api/auth/register/").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/google", "/api/auth/google/").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/paypal/webhook").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/stripe/webhook").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/contact").permitAll()
                         // Subscription endpoints - authenticated (must come before broad GET /api/**)
                         .requestMatchers(HttpMethod.POST, "/api/subscriptions/create").authenticated()
