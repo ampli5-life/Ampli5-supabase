@@ -2,10 +2,9 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { api } from "@/lib/api";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Play, Search } from "lucide-react";
+import { Lock, Play, Search } from "lucide-react";
 
 interface Video {
   id: string;
@@ -39,6 +38,7 @@ const FreeVideos = () => {
 
   const formatDuration = (d?: number) => (d != null ? `${d} min` : "—");
   const thumb = (v: Video) => v.thumbnailUrl || v.thumbnail_url || "";
+  const isPaid = (v: Video) => v.is_paid === true || (v as { isPaid?: boolean }).isPaid === true;
 
   return (
     <>
@@ -91,8 +91,11 @@ const FreeVideos = () => {
                     <div className="absolute inset-0 flex items-center justify-center bg-foreground/0 transition-colors group-hover:bg-foreground/20">
                       <Play className="h-12 w-12 text-primary-foreground opacity-0 transition-opacity group-hover:opacity-100" />
                     </div>
-                    {video.is_paid && (
-                      <Badge className="absolute left-3 top-3 bg-secondary text-secondary-foreground">Premium</Badge>
+                    {isPaid(video) && (
+                      <div className="absolute left-3 top-3 flex items-center gap-1.5 rounded bg-foreground/80 px-2 py-1 text-primary-foreground">
+                        <Lock className="h-4 w-4" />
+                        <span className="text-xs font-medium">Locked</span>
+                      </div>
                     )}
                     <span className="absolute bottom-3 right-3 rounded bg-foreground/70 px-2 py-0.5 text-xs text-primary-foreground">{formatDuration(video.duration)}</span>
                   </div>
@@ -101,6 +104,11 @@ const FreeVideos = () => {
                     <h3 className="mt-1 font-serif text-lg font-semibold leading-snug hover:text-primary">
                       {video.title}
                     </h3>
+                    {isPaid(video) && (
+                      <Button asChild className="mt-3 w-full" size="sm" onClick={(e) => e.stopPropagation()}>
+                        <Link to="/pricing" onClick={(e) => e.stopPropagation()}>Subscribe</Link>
+                      </Button>
+                    )}
                   </CardContent>
                 </Card>
               </Link>

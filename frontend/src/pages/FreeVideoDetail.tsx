@@ -94,12 +94,23 @@ const FreeVideoDetail = () => {
               allowFullScreen
             />
           ) : isPaid && !canPlay ? (
-            <div className="flex h-full min-h-[200px] flex-col items-center justify-center gap-4 rounded-lg border border-dashed bg-muted/30 p-8 text-center">
-              <Lock className="h-12 w-12 text-muted-foreground" />
-              <p className="text-muted-foreground">This is a premium video. Subscribe to watch.</p>
-              <div className="flex flex-wrap items-center justify-center gap-3">
+            <div className="rounded-lg overflow-hidden border border-dashed bg-muted/30">
+              <div className="relative aspect-video overflow-hidden">
+                <img
+                  src={video.thumbnail_url ?? (video as { thumbnailUrl?: string }).thumbnailUrl ?? ""}
+                  alt={video.title}
+                  className="h-full w-full object-cover"
+                />
+                <div className="absolute inset-0 flex items-center justify-center bg-foreground/50">
+                  <div className="flex flex-col items-center gap-2 text-primary-foreground">
+                    <Lock className="h-14 w-14" />
+                    <span className="text-sm font-medium">Locked</span>
+                  </div>
+                </div>
+              </div>
+              <div className="flex flex-wrap items-center justify-center gap-3 p-4">
                 <Button asChild>
-                  <Link to="/pricing">View plans</Link>
+                  <Link to="/pricing">Subscribe</Link>
                 </Button>
                 {!profile && (
                   <Button variant="outline" asChild>
