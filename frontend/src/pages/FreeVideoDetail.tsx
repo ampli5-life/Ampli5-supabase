@@ -22,7 +22,7 @@ interface Video {
 const FreeVideoDetail = () => {
   const { id } = useParams();
   const location = useLocation();
-  const { profile, isSubscribed } = useAuth();
+  const { profile, isSubscribed, loading: authLoading } = useAuth();
   const stateVideo = (location.state as { video?: Video } | null)?.video ?? null;
   const stateMatchesId = stateVideo?.id === id;
   const [video, setVideo] = useState<Video | null>(() => (stateMatchesId ? stateVideo : null));
@@ -73,7 +73,8 @@ const FreeVideoDetail = () => {
     return match ? match[1] : null;
   })();
   const formatDuration = (d?: number) => (d != null ? `${d} min` : "—");
-  const canPlay = !video.is_paid || isSubscribed;
+  const isPaid = video.is_paid === true || (video as { isPaid?: boolean }).isPaid === true;
+  const canPlay = !isPaid || (!authLoading && isSubscribed);
 
   return (
     <div className="py-8">
@@ -92,7 +93,7 @@ const FreeVideoDetail = () => {
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen
             />
-          ) : video.is_paid && !canPlay ? (
+          ) : isPaid && !canPlay ? (
             <div className="flex h-full min-h-[200px] flex-col items-center justify-center gap-4 rounded-lg border border-dashed bg-muted/30 p-8 text-center">
               <Lock className="h-12 w-12 text-muted-foreground" />
               <p className="text-muted-foreground">This is a premium video. Subscribe to watch.</p>
