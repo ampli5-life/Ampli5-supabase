@@ -107,6 +107,25 @@ export async function createSubscription(
   });
 }
 
+/** Confirms subscription using Stripe session ID only (no auth required). Use after Stripe redirect. */
+export async function confirmSubscriptionBySession(sessionId: string): Promise<{
+  success: boolean;
+  plan: string;
+  startDate: string;
+  endDate: string;
+}> {
+  const res = await fetch(`${API_BASE}/subscriptions/confirm-session`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ sessionId }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error((err as { message?: string }).message || `Request failed: ${res.status}`);
+  }
+  return res.json();
+}
+
 export async function confirmSubscription(subscriptionIdOrSessionId: string): Promise<{
   success: boolean;
   plan: string;

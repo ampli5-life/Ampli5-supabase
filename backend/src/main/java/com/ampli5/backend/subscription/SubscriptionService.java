@@ -44,6 +44,18 @@ public class SubscriptionService {
     }
 
     @Transactional
+    public ConfirmSubscriptionResponse confirmSubscriptionBySession(String sessionId) {
+        if (sessionId == null || sessionId.isBlank()) {
+            throw new IllegalArgumentException("sessionId is required");
+        }
+        if (!sessionId.startsWith("cs_")) {
+            throw new IllegalArgumentException("Invalid session ID. Must start with cs_.");
+        }
+        StripeSubscriptionService.SubscriptionDetails details = stripeSubscriptionService.retrieveSubscriptionFromSession(sessionId);
+        return confirmStripeSubscription(details.userId(), sessionId);
+    }
+
+    @Transactional
     public ConfirmSubscriptionResponse confirmStripeSubscription(UUID userId, String sessionId) {
         StripeSubscriptionService.SubscriptionDetails details = stripeSubscriptionService.retrieveSubscriptionFromSession(sessionId);
         Optional<Subscription> existing = subscriptionRepository.findByStripeSubscriptionId(details.stripeSubscriptionId());

@@ -53,6 +53,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/auth/google", "/api/auth/google/").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/stripe/webhook").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/contact").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/subscriptions/confirm-session").permitAll()
                         // Subscription endpoints - authenticated (must come before broad GET /api/**)
                         .requestMatchers(HttpMethod.POST, "/api/subscriptions/create").authenticated()
                         .requestMatchers(HttpMethod.POST, "/api/subscriptions/confirm").authenticated()

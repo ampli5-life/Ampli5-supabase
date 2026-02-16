@@ -40,6 +40,24 @@ public class SubscriptionController {
         }
     }
 
+    @PostMapping("/subscriptions/confirm-session")
+    public ResponseEntity<?> confirmBySession(@RequestBody Map<String, String> body) {
+        String sessionId = body != null ? body.get("sessionId") : null;
+        if (sessionId == null || sessionId.isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("message", "sessionId is required"));
+        }
+        try {
+            SubscriptionService.ConfirmSubscriptionResponse resp = subscriptionService.confirmSubscriptionBySession(sessionId);
+            return ResponseEntity.ok(Map.of(
+                    "success", resp.success(),
+                    "plan", resp.planId() != null ? resp.planId() : "",
+                    "startDate", resp.startDate() != null ? resp.startDate().toString() : "",
+                    "endDate", resp.endDate() != null ? resp.endDate().toString() : ""));
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
+
     @PostMapping("/subscriptions/confirm")
     public ResponseEntity<?> confirm(@RequestBody Map<String, String> body, Principal principal) {
         if (principal == null) {

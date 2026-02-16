@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { confirmSubscription } from "@/lib/api";
+import { confirmSubscription, confirmSubscriptionBySession } from "@/lib/api";
 import { Loader2, CheckCircle, XCircle } from "lucide-react";
 
 const SubscriptionSuccess = () => {
@@ -25,7 +25,10 @@ const SubscriptionSuccess = () => {
       );
       return;
     }
-    confirmSubscription(subscriptionId)
+    const confirmFn = subscriptionId.startsWith("cs_")
+      ? confirmSubscriptionBySession(subscriptionId)
+      : confirmSubscription(subscriptionId);
+    confirmFn
       .then(() => {
         setStatus("success");
         refreshSubscription();

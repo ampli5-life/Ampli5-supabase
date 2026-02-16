@@ -12,7 +12,6 @@ import com.stripe.param.checkout.SessionCreateParams;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
-import java.util.List;
 import java.util.UUID;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
@@ -92,7 +91,7 @@ public class StripeSubscriptionService {
         }
     }
 
-    public record SubscriptionDetails(String stripeSubscriptionId, String planId,
+    public record SubscriptionDetails(UUID userId, String stripeSubscriptionId, String planId,
                                       OffsetDateTime startDate, OffsetDateTime endDate) {}
 
     public SubscriptionDetails retrieveSubscriptionFromSession(String sessionId) {
@@ -101,6 +100,11 @@ public class StripeSubscriptionService {
         }
         try {
             Session session = Session.retrieve(sessionId);
+            String clientRef = session.getClientReferenceId();
+            if (clientRef == null || clientRef.isBlank()) {
+                throw new IllegalStateException("Checkout session has no client_reference_id");
+            }
+            UUID userId = UUID.fromString(clientRef);
             String subId = session.getSubscription();
             if (subId == null || subId.isBlank()) {
                 throw new IllegalStateException("Checkout session has no subscription");
@@ -133,7 +137,7 @@ public class StripeSubscriptionService {
                     ? OffsetDateTime.ofInstant(Instant.ofEpochSecond(end), ZoneOffset.UTC)
                     : startDate.plusMonths(1);
 
-            return new SubscriptionDetails(subId, planId, startDate, endDate);
+            return new SubscriptionDetails(userId, subId, planId, startDate, endDate);
         } catch (Exception e) {
             throw new RuntimeException("Failed to retrieve Stripe session/subscription: " + e.getMessage(), e);
         }
