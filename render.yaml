@@ -46,11 +46,10 @@ services:
       - key: CONTACT_MAIL_RECIPIENT
         sync: false
 
-  # Frontend: Vite static site
+  # Frontend: Vite static site (omit plan: free - not supported for static in Blueprint; static sites are free by default)
   - type: web
     runtime: static
     name: ampli5-frontend
-    plan: free
     rootDir: frontend
     buildCommand: npm ci && npm run build
     staticPublishPath: ./dist
