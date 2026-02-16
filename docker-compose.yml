@@ -1,0 +1,51 @@
+# Subscription (Silver = 1 month, Gold = 1 year) and profile page use the backend API.
+# Set PAYPAL_* in .env; PAYPAL_RETURN_URL / PAYPAL_CANCEL_URL should match where the app is served (e.g. http://localhost/subscription-success when frontend is on port 80).
+# To pick up code changes, run: docker compose up --build -d  (or use ./start.sh)
+services:
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    ports:
+      - "5434:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8081:8080"
+    env_file: .env
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/postgres
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      PAYPAL_CLIENT_ID: ${PAYPAL_CLIENT_ID:-}
+      PAYPAL_CLIENT_SECRET: ${PAYPAL_CLIENT_SECRET:-}
+      PAYPAL_MODE: ${PAYPAL_MODE:-sandbox}
+      PAYPAL_RETURN_URL: ${PAYPAL_RETURN_URL:-http://localhost/subscription-success}
+      PAYPAL_CANCEL_URL: ${PAYPAL_CANCEL_URL:-http://localhost/}
+      # PAYPAL_PLAN_SILVER and PAYPAL_PLAN_GOLD come from env_file: .env only (no override)
+    depends_on:
+      - postgres
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_GOOGLE_CLIENT_ID: ${VITE_GOOGLE_CLIENT_ID:-}
+        VITE_PAYPAL_CLIENT_ID: ${VITE_PAYPAL_CLIENT_ID:-}
+        VITE_API_URL: ${VITE_API_URL:-}
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
