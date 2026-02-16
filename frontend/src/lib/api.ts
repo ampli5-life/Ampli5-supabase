@@ -1,6 +1,11 @@
-const API_BASE = import.meta.env.VITE_API_URL != null && import.meta.env.VITE_API_URL !== ""
-  ? import.meta.env.VITE_API_URL
-  : "/api";
+function getApiBase(): string {
+  const url = import.meta.env.VITE_API_URL;
+  if (url == null || url === "") return "/api";
+  const base = String(url).trim().replace(/\/$/, "");
+  const result = base.endsWith("/api") ? base : `${base}/api`;
+  return result.replace(/\/$/, "");
+}
+const API_BASE = getApiBase();
 
 export const TOKEN_KEY = "ampli5_token";
 
