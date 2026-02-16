@@ -71,6 +71,47 @@ const About = () => {
       </div>
     </section>
 
+    {/* Values */}
+    <section className="bg-muted py-20">
+      <div className="container">
+        <h2 className="mb-10 text-center font-serif text-3xl font-bold">What We Believe</h2>
+        <div className="grid gap-8 md:grid-cols-3">
+          {[
+            {
+              label: "Accessibility",
+              description: "Yoga should meet you where you are—regardless of age, ability, schedule, or equipment.",
+            },
+            {
+              label: "Quality over quantity",
+              description: "Every class is carefully curated so you always feel guided, safe, and supported.",
+            },
+            {
+              label: "Sustainable practice",
+              description: "We focus on small, consistent steps that fit into real life—and last for years.",
+            },
+          ].map((value, i) => (
+            <motion.div
+              key={value.label}
+              custom={i}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true }}
+              variants={fadeUp}
+            >
+              <Card className="border-0 shadow-sm h-full">
+                <CardContent className="p-6">
+                  <Badge variant="outline" className="mb-3 uppercase tracking-wide text-xs">
+                    {value.label}
+                  </Badge>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{value.description}</p>
+                </CardContent>
+              </Card>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+    </section>
+
     {/* Team */}
     <section className="bg-muted py-20">
       <div className="container">

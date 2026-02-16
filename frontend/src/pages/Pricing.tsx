@@ -92,6 +92,7 @@ const Pricing = () => {
 
     <section className="py-20">
       <div className="container">
+        <p className="mb-6 text-center text-sm text-muted-foreground">No contracts. Cancel anytime. No hidden fees.</p>
         {error && (
           <div className="mb-6 rounded-lg border border-destructive/50 bg-destructive/10 px-4 py-2 text-sm text-destructive">
             {error}

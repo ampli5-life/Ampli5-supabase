@@ -41,6 +41,13 @@ interface Testimonial {
   author?: string;
 }
 
+interface Book {
+  title: string;
+  author: string;
+  description: string;
+  url?: string;
+}
+
 async function fetchPageContent(key: string): Promise<string | null> {
   try {
     const data = await api.get<{ contentJson?: string }>(`/page-content/key/${key}`);
@@ -79,6 +86,75 @@ const Index = () => {
 
   const heroTitle = hero?.title || "Amplify Your Life Through Yoga";
   const heroSubtitle = hero?.subtitle || "Expert-led classes for every level. Flow, stretch, meditate — anytime, anywhere.";
+
+  const fallbackBlogPosts: BlogPost[] = [
+    {
+      id: "morning-stretches",
+      title: "5 Morning Stretches for a Softer Start",
+      excerpt: "A short sequence you can do next to your bed to gently wake up joints and muscles.",
+      tag: "Beginners",
+    },
+    {
+      id: "breathing-matters",
+      title: "Why Breathing Matters More Than the Pose",
+      excerpt: "Learn how simple breath awareness can change the way every practice feels.",
+      tag: "Mindfulness",
+    },
+    {
+      id: "home-practice",
+      title: "Building a Home Practice That Sticks",
+      excerpt: "Practical tips to weave yoga into real life—not the perfect schedule.",
+      tag: "Lifestyle",
+    },
+  ];
+
+  const fallbackTestimonials: Testimonial[] = [
+    {
+      id: "t1",
+      text: "Ampli5 made it so easy to practice again. Ten minutes in the morning is now my favorite ritual.",
+      author: "Rohit A.",
+    },
+    {
+      id: "t2",
+      text: "I love that I can choose exactly what I need—slow and grounding, or strong and sweaty.",
+      author: "Meera S.",
+    },
+    {
+      id: "t3",
+      text: "The teachers feel genuinely present and encouraging, even through the screen.",
+      author: "Daniel K.",
+    },
+  ];
+
+  const books: Book[] = [
+    {
+      title: "Light on Yoga",
+      author: "B.K.S. Iyengar",
+      description: "A classic reference with detailed posture breakdowns and sequencing guidance for serious students.",
+      url: "https://www.amazon.in/dp/0008100468",
+    },
+    {
+      title: "The Heart of Yoga",
+      author: "T.K.V. Desikachar",
+      description: "A practical, compassionate introduction to adapting yoga to your own body and life.",
+      url: "https://www.amazon.in/dp/089281764X",
+    },
+    {
+      title: "Yoga for Everyone",
+      author: "Dianne Bondy",
+      description: "Inclusive, body-positive practices with clear variations so every practitioner feels welcome.",
+      url: "https://www.amazon.in/dp/1465480773",
+    },
+    {
+      title: "The Miracle of Mindfulness",
+      author: "Thich Nhat Hanh",
+      description: "Short, beautiful teachings on bringing gentle awareness into everyday moments.",
+      url: "https://www.amazon.in/dp/1846041066",
+    },
+  ];
+
+  const effectiveBlogPosts = (blogPosts && blogPosts.length > 0 ? blogPosts : fallbackBlogPosts).slice(0, 3);
+  const effectiveTestimonials = (testimonials && testimonials.length > 0 ? testimonials : fallbackTestimonials).slice(0, 3);
 
   if (loading) {
     return (
@@ -213,7 +289,7 @@ const Index = () => {
         <div className="container">
           <h2 className="mb-12 text-center font-serif text-3xl font-bold md:text-4xl">What Our Members Say</h2>
           <div className="grid gap-6 md:grid-cols-3">
-            {testimonials.slice(0, 3).map((t, i) => (
+            {effectiveTestimonials.map((t, i) => (
               <motion.div key={t.id || i} custom={i} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}>
                 <Card className="h-full border-0 shadow-sm">
                   <CardContent className="flex h-full flex-col p-6">
@@ -234,7 +310,7 @@ const Index = () => {
         <div className="container">
           <h2 className="mb-12 text-center font-serif text-3xl font-bold md:text-4xl">From the Blog</h2>
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {blogPosts.map((post, i) => (
+            {effectiveBlogPosts.map((post, i) => (
               <motion.div key={post.id} custom={i} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}>
                 <Card className="group overflow-hidden border-0 shadow-sm">
                   <CardContent className="p-4">
@@ -252,6 +328,43 @@ const Index = () => {
             <Button variant="outline" asChild>
               <Link to="/blog">Read More <BookOpen className="ml-1 h-4 w-4" /></Link>
             </Button>
+          </div>
+        </div>
+      </section>
+
+      {/* Recommended Reads */}
+      <section className="py-20">
+        <div className="container">
+          <h2 className="mb-12 text-center font-serif text-3xl font-bold md:text-4xl">Books We Love</h2>
+          <p className="mx-auto mb-10 max-w-2xl text-center text-muted-foreground">
+            A short, curated list of books to deepen your understanding of yoga, movement, and mindfulness beyond the mat.
+          </p>
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            {books.map((book, i) => (
+              <motion.div
+                key={book.title}
+                custom={i}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true }}
+                variants={fadeUp}
+              >
+                <Card className="h-full border-0 shadow-sm">
+                  <CardContent className="flex h-full flex-col p-5">
+                    <h3 className="font-serif text-lg font-semibold">{book.title}</h3>
+                    <p className="mt-1 text-sm text-primary font-medium">{book.author}</p>
+                    <p className="mt-3 flex-1 text-sm text-muted-foreground">{book.description}</p>
+                    {book.url && (
+                      <Button asChild variant="outline" size="sm" className="mt-4">
+                        <a href={book.url} target="_blank" rel="noopener noreferrer">
+                          Learn more
+                        </a>
+                      </Button>
+                    )}
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
           </div>
         </div>
       </section>

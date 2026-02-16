@@ -25,8 +25,30 @@ const Blog = () => {
     api.get<BlogPost[]>("/blog").then((data) => setPosts(Array.isArray(data) ? data : [])).catch(() => []).finally(() => setLoading(false));
   }, []);
 
-  const categories = ["All", ...Array.from(new Set((posts || []).map((p) => p.tag).filter(Boolean) as string[]))];
-  const filtered = posts.filter((p) => {
+  const fallbackPosts: BlogPost[] = [
+    {
+      id: "morning-stretches",
+      title: "5 Morning Stretches for a Softer Start",
+      excerpt: "A short sequence you can do next to your bed to gently wake up joints and muscles.",
+      tag: "Beginners",
+    },
+    {
+      id: "breathing-matters",
+      title: "Why Breathing Matters More Than the Pose",
+      excerpt: "Learn how simple breath awareness can change the way every practice feels.",
+      tag: "Mindfulness",
+    },
+    {
+      id: "home-practice",
+      title: "Building a Home Practice That Sticks",
+      excerpt: "Practical tips to weave yoga into real life—not the perfect schedule.",
+      tag: "Lifestyle",
+    },
+  ];
+
+  const sourcePosts = posts.length > 0 ? posts : fallbackPosts;
+  const categories = ["All", ...Array.from(new Set((sourcePosts || []).map((p) => p.tag).filter(Boolean) as string[]))];
+  const filtered = sourcePosts.filter((p) => {
     if (search && !p.title.toLowerCase().includes(search.toLowerCase())) return false;
     if (selectedCategory !== "All" && p.tag !== selectedCategory) return false;
     return true;

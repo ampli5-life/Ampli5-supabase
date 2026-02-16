@@ -16,6 +16,7 @@ const baseNavLinks = [
   { label: "About", to: "/about" },
   { label: "Videos", to: "/free-videos" },
   { label: "Blog", to: "/blog" },
+  { label: "Books", to: "/books" },
   { label: "Pricing", to: "/pricing" },
   { label: "Contact", to: "/contact" },
 ];

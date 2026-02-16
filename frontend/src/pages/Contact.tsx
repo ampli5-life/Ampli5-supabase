@@ -40,6 +40,7 @@ const Contact = () => {
         <div className="container text-center">
           <h1 className="font-serif text-4xl font-bold md:text-5xl">Contact Us</h1>
           <p className="mx-auto mt-4 max-w-xl opacity-90">We'd love to hear from you. Drop us a message and we'll get back to you soon.</p>
+          <p className="mx-auto mt-2 max-w-xl text-sm opacity-80">We typically respond within 24 hours on business days.</p>
         </div>
       </section>
 

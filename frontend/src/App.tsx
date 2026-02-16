@@ -11,6 +11,7 @@ import FreeVideos from "./pages/FreeVideos";
 import FreeVideoDetail from "./pages/FreeVideoDetail";
 import Blog from "./pages/Blog";
 import BlogPost from "./pages/BlogPost";
+import Books from "./pages/Books";
 import Contact from "./pages/Contact";
 import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
@@ -38,6 +39,7 @@ const App = () => (
             <Route path="/free-videos/:id" element={<FreeVideoDetail />} />
             <Route path="/blog" element={<Blog />} />
             <Route path="/blog/:slug" element={<BlogPost />} />
+            <Route path="/books" element={<Books />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/terms" element={<Terms />} />
             <Route path="/privacy" element={<Privacy />} />

@@ -18,6 +18,7 @@ const Footer = () => (
           <ul className="space-y-2 text-sm">
             <li><Link to="/free-videos" className="opacity-80 hover:opacity-100">Videos</Link></li>
             <li><Link to="/blog" className="opacity-80 hover:opacity-100">Blog</Link></li>
+            <li><Link to="/books" className="opacity-80 hover:opacity-100">Books</Link></li>
             <li><Link to="/pricing" className="opacity-80 hover:opacity-100">Pricing</Link></li>
             <li><Link to="/about" className="opacity-80 hover:opacity-100">About Us</Link></li>
           </ul>
