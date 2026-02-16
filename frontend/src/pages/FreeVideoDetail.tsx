@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
 import { useParams, useLocation, Link } from "react-router-dom";
 import { api } from "@/lib/api";
+import { useAuth } from "@/contexts/AuthContext";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { ArrowLeft, Play } from "lucide-react";
+import { ArrowLeft, Lock, Play } from "lucide-react";
 
 interface Video {
   id: string;
@@ -21,6 +22,7 @@ interface Video {
 const FreeVideoDetail = () => {
   const { id } = useParams();
   const location = useLocation();
+  const { profile, isSubscribed } = useAuth();
   const stateVideo = (location.state as { video?: Video } | null)?.video ?? null;
   const stateMatchesId = stateVideo?.id === id;
   const [video, setVideo] = useState<Video | null>(() => (stateMatchesId ? stateVideo : null));
@@ -71,6 +73,7 @@ const FreeVideoDetail = () => {
     return match ? match[1] : null;
   })();
   const formatDuration = (d?: number) => (d != null ? `${d} min` : "—");
+  const canPlay = !video.is_paid || isSubscribed;
 
   return (
     <div className="py-8">
@@ -81,7 +84,7 @@ const FreeVideoDetail = () => {
 
         {/* Player */}
         <div className="aspect-video overflow-hidden rounded-lg bg-foreground/5">
-          {youtubeId ? (
+          {canPlay && youtubeId ? (
             <iframe
               src={`https://www.youtube.com/embed/${youtubeId}`}
               title={video.title}
@@ -89,6 +92,21 @@ const FreeVideoDetail = () => {
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen
             />
+          ) : video.is_paid && !canPlay ? (
+            <div className="flex h-full min-h-[200px] flex-col items-center justify-center gap-4 rounded-lg border border-dashed bg-muted/30 p-8 text-center">
+              <Lock className="h-12 w-12 text-muted-foreground" />
+              <p className="text-muted-foreground">This is a premium video. Subscribe to watch.</p>
+              <div className="flex flex-wrap items-center justify-center gap-3">
+                <Button asChild>
+                  <Link to="/pricing">View plans</Link>
+                </Button>
+                {!profile && (
+                  <Button variant="outline" asChild>
+                    <Link to="/login">Log in</Link>
+                  </Button>
+                )}
+              </div>
+            </div>
           ) : (
             <div className="flex h-full min-h-[200px] flex-col items-center justify-center gap-2 rounded-lg border border-dashed bg-muted/30 p-6 text-center text-muted-foreground">
               <p>This video cannot be played here.</p>
