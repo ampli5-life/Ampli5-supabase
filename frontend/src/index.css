@@ -15,7 +15,7 @@
     --popover: 40 30% 98%;
     --popover-foreground: 30 25% 12%;
 
-    --primary: 152 38% 25%;
+    --primary: 205 70% 42%;
     --primary-foreground: 40 33% 96%;
 
     --secondary: 40 55% 52%;
@@ -32,24 +32,24 @@
 
     --border: 40 22% 86%;
     --input: 40 22% 86%;
-    --ring: 152 38% 25%;
+    --ring: 205 70% 42%;
 
     --radius: 0.75rem;
 
     --sidebar-background: 40 30% 95%;
     --sidebar-foreground: 30 25% 12%;
-    --sidebar-primary: 152 38% 25%;
+    --sidebar-primary: 205 70% 42%;
     --sidebar-primary-foreground: 40 33% 96%;
     --sidebar-accent: 40 25% 90%;
     --sidebar-accent-foreground: 30 25% 12%;
     --sidebar-border: 40 22% 86%;
-    --sidebar-ring: 152 38% 25%;
+    --sidebar-ring: 205 70% 42%;
 
     --warm-gold: 40 55% 52%;
     --sage: 120 15% 72%;
     --terracotta: 24 45% 48%;
     --cream: 40 33% 96%;
-    --forest: 152 38% 25%;
+    --forest: 205 70% 42%;
   }
 
   .dark {
@@ -62,7 +62,7 @@
     --popover: 30 18% 12%;
     --popover-foreground: 40 25% 92%;
 
-    --primary: 152 35% 45%;
+    --primary: 205 65% 55%;
     --primary-foreground: 30 20% 8%;
 
     --secondary: 40 45% 42%;
@@ -79,16 +79,16 @@
 
     --border: 30 15% 20%;
     --input: 30 15% 20%;
-    --ring: 152 35% 45%;
+    --ring: 205 65% 55%;
 
     --sidebar-background: 30 18% 10%;
     --sidebar-foreground: 40 25% 92%;
-    --sidebar-primary: 152 35% 45%;
+    --sidebar-primary: 205 65% 55%;
     --sidebar-primary-foreground: 30 20% 8%;
     --sidebar-accent: 30 15% 16%;
     --sidebar-accent-foreground: 40 25% 92%;
     --sidebar-border: 30 15% 20%;
-    --sidebar-ring: 152 35% 45%;
+    --sidebar-ring: 205 65% 55%;
   }
 }
 
@@ -103,5 +103,14 @@
 
   h1, h2, h3, h4, h5, h6 {
     font-family: 'Playfair Display', serif;
+  }
+
+  @keyframes hero-shimmer {
+    0%, 100% { opacity: 0.6; }
+    50% { opacity: 1; }
+  }
+
+  .hero-shimmer {
+    animation: hero-shimmer 6s ease-in-out infinite;
   }
 }

@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { api } from "@/lib/api";
 import { Play, Star, Users, BookOpen, ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
+import { WaveDivider, GradientStrip } from "@/components/WaveDivider";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
@@ -168,15 +169,26 @@ const Index = () => {
     <>
       {/* Hero */}
       <section className="relative overflow-hidden bg-primary py-24 text-primary-foreground md:py-32">
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute inset-0 bg-gradient-to-br from-transparent via-secondary/20 to-transparent" />
+        {/* Shimmer overlay */}
+        <div className="hero-shimmer absolute inset-0">
+          <div className="absolute inset-0 bg-gradient-to-br from-transparent via-white/10 to-transparent" />
         </div>
+        {/* Subtle geometric pattern */}
+        <div
+          className="absolute inset-0 opacity-[0.04]"
+          style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z' fill='%23ffffff'/%3E%3C/g%3E%3C/svg%3E")`,
+          }}
+        />
         <div className="container relative text-center">
           <motion.h1
             className="mx-auto max-w-3xl font-serif text-4xl font-bold leading-tight md:text-6xl"
             initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
+            animate={{ opacity: 1, y: [0, -3, 0] }}
+            transition={{
+              opacity: { duration: 0.6 },
+              y: { duration: 4, repeat: Infinity, ease: "easeInOut", delay: 0.6 },
+            }}
           >
             {heroTitle}
           </motion.h1>
@@ -194,15 +206,21 @@ const Index = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.4 }}
           >
-            <Button size="lg" variant="secondary" asChild>
-              <Link to="/pricing">Start Your Journey <ArrowRight className="ml-1 h-4 w-4" /></Link>
-            </Button>
-            <Button size="lg" variant="outline" className="border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10" asChild>
-              <Link to="/free-videos">Browse Classes</Link>
-            </Button>
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.98 }}>
+              <Button size="lg" variant="secondary" asChild>
+                <Link to="/pricing">Start Your Journey <ArrowRight className="ml-1 h-4 w-4" /></Link>
+              </Button>
+            </motion.div>
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.98 }}>
+              <Button size="lg" variant="outline" className="border-2 border-white/50 bg-transparent text-white hover:bg-white/15 hover:text-white" asChild>
+                <Link to="/free-videos">Browse Classes</Link>
+              </Button>
+            </motion.div>
           </motion.div>
         </div>
       </section>
+
+      <WaveDivider />
 
       {/* Featured Videos */}
       <section className="py-20">
@@ -253,6 +271,8 @@ const Index = () => {
           </div>
         </div>
       </section>
+
+      <GradientStrip />
 
       {/* Benefits */}
       <section className="bg-muted py-20">

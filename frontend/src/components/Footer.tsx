@@ -6,8 +6,10 @@ const Footer = () => (
     <div className="container py-12">
       <div className="grid gap-8 md:grid-cols-4">
         <div>
-          <span className="font-serif text-2xl font-bold">Ampli5</span>
-          <span className="text-sm opacity-80">.Life</span>
+          <Link to="/" className="inline-flex items-center gap-2">
+            <img src="/logo.png" alt="Ampli5" className="h-10 object-contain" />
+            <span className="text-sm opacity-80">.Life</span>
+          </Link>
           <p className="mt-3 text-sm opacity-80">
             Amplify your life through the transformative power of yoga. Practice anytime, anywhere.
           </p>
