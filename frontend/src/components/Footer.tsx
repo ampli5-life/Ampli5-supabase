@@ -8,7 +8,7 @@ const Footer = () => (
         <div>
           <Link to="/" className="inline-flex items-center gap-2">
             <span className="flex rounded-lg bg-white p-2 shadow-md">
-              <img src="/logo.png" alt="Ampli5" className="h-9 object-contain" />
+              <img src="/logo.png" alt="Ampli5" className="h-9 object-contain invert" />
             </span>
             <span className="text-sm opacity-80">.Life</span>
           </Link>

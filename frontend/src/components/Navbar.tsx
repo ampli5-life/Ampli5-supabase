@@ -47,7 +47,7 @@ const Navbar = () => {
       <nav className="container flex h-16 items-center justify-between">
         <Link to="/" className="flex items-center gap-2">
           <span className="flex rounded-lg border border-gray-200/80 bg-white p-2 shadow-sm">
-            <img src="/logo.png" alt="Ampli5" className="h-9 object-contain" />
+            <img src="/logo.png" alt="Ampli5" className="h-9 object-contain invert" />
           </span>
           <span className="text-sm text-muted-foreground">.Life</span>
         </Link>
