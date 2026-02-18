@@ -99,6 +99,10 @@ public class SubscriptionService {
         return new SubscriptionStatusResponse(valid, s.getPlanId(), s.getStartDate(), s.getEndDate(), planDisplayName(s.getPlanId()));
     }
 
+    public boolean hasActiveSubscription(UUID userId) {
+        return getStatus(userId).isSubscribed();
+    }
+
     public void handleStripeWebhook(byte[] payload, String signature) {
         stripeSubscriptionService.handleWebhook(new String(payload, StandardCharsets.UTF_8), signature);
     }

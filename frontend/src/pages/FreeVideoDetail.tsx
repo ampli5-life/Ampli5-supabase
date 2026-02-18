@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, useLocation, Link } from "react-router-dom";
-import { api } from "@/lib/api";
+import { api, getVideoEmbedUrl, EmbedForbiddenError } from "@/lib/api";
 import { useAuth } from "@/contexts/AuthContext";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -12,7 +12,6 @@ interface Video {
   title: string;
   description?: string;
   thumbnail_url?: string;
-  youtube_url?: string;
   is_paid?: boolean;
   category?: string;
   duration?: number;
@@ -28,6 +27,9 @@ const FreeVideoDetail = () => {
   const [video, setVideo] = useState<Video | null>(() => (stateMatchesId ? stateVideo : null));
   const [related, setRelated] = useState<Video[]>([]);
   const [loading, setLoading] = useState(!stateMatchesId);
+  const [embedUrl, setEmbedUrl] = useState<string | null>(null);
+  const [embedLoading, setEmbedLoading] = useState(false);
+  const [embedForbidden, setEmbedForbidden] = useState(false);
 
   useEffect(() => {
     if (!id) {
@@ -45,6 +47,30 @@ const FreeVideoDetail = () => {
       }
     }).finally(() => setLoading(false));
   }, [id]);
+
+  const isPaid = video?.is_paid === true || (video as { isPaid?: boolean })?.isPaid === true;
+  const canAttemptPlay = !isPaid || (!authLoading && isSubscribed);
+
+  useEffect(() => {
+    if (!id || !video || !canAttemptPlay) {
+      setEmbedUrl(null);
+      setEmbedForbidden(false);
+      setEmbedLoading(false);
+      return;
+    }
+    setEmbedLoading(true);
+    setEmbedForbidden(false);
+    getVideoEmbedUrl(id)
+      .then((r) => {
+        setEmbedUrl(r.embedUrl);
+        setEmbedForbidden(false);
+      })
+      .catch((err) => {
+        setEmbedUrl(null);
+        setEmbedForbidden(err instanceof EmbedForbiddenError);
+      })
+      .finally(() => setEmbedLoading(false));
+  }, [id, video, canAttemptPlay]);
 
   if (loading) {
     return (
@@ -65,16 +91,8 @@ const FreeVideoDetail = () => {
     );
   }
 
-  const youtubeUrl = video.youtube_url ?? (video as { youtubeUrl?: string }).youtubeUrl ?? "";
-  const youtubeId = (() => {
-    if (!youtubeUrl || !youtubeUrl.trim()) return null;
-    const trimmed = youtubeUrl.trim();
-    const match = trimmed.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/);
-    return match ? match[1] : null;
-  })();
   const formatDuration = (d?: number) => (d != null ? `${d} min` : "—");
-  const isPaid = video.is_paid === true || (video as { isPaid?: boolean }).isPaid === true;
-  const canPlay = !isPaid || (!authLoading && isSubscribed);
+  const showLocked = isPaid && (!canAttemptPlay || embedForbidden);
 
   return (
     <div className="py-8">
@@ -84,16 +102,24 @@ const FreeVideoDetail = () => {
         </Button>
 
         {/* Player */}
-        <div className="aspect-video overflow-hidden rounded-lg bg-foreground/5">
-          {canPlay && youtubeId ? (
+        <div
+          className="aspect-video overflow-hidden rounded-lg bg-foreground/5"
+          onContextMenu={(e) => e.preventDefault()}
+        >
+          {embedUrl ? (
             <iframe
-              src={`https://www.youtube.com/embed/${youtubeId}`}
+              src={embedUrl}
               title={video.title}
               className="h-full w-full"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen
             />
-          ) : isPaid && !canPlay ? (
+          ) : embedLoading ? (
+            <div className="flex h-full min-h-[200px] flex-col items-center justify-center gap-2 rounded-lg border border-dashed bg-muted/30 p-6">
+              <div className="h-10 w-10 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+              <p className="text-sm text-muted-foreground">Loading video...</p>
+            </div>
+          ) : showLocked ? (
             <div className="rounded-lg overflow-hidden border border-dashed bg-muted/30">
               <div className="relative aspect-video overflow-hidden">
                 <img
@@ -122,13 +148,7 @@ const FreeVideoDetail = () => {
           ) : (
             <div className="flex h-full min-h-[200px] flex-col items-center justify-center gap-2 rounded-lg border border-dashed bg-muted/30 p-6 text-center text-muted-foreground">
               <p>This video cannot be played here.</p>
-              {youtubeUrl ? (
-                <a href={youtubeUrl} target="_blank" rel="noopener noreferrer" className="text-primary underline">
-                  Open in YouTube
-                </a>
-              ) : (
-                <p className="text-sm">No video link is set for this content.</p>
-              )}
+              <p className="text-sm">No video link is available for this content.</p>
             </div>
           )}
         </div>

@@ -201,6 +201,35 @@ export async function apiFetch<T>(path: string, options: RequestInit = {}): Prom
   return res.json();
 }
 
+/** Error thrown when embed returns 403 (subscription required). Does not clear auth token. */
+export class EmbedForbiddenError extends Error {
+  constructor() {
+    super("Embed access forbidden");
+  }
+}
+
+/** Fetches the embed URL for a video. Returns { embedUrl } if allowed; throws EmbedForbiddenError on 403. */
+export async function getVideoEmbedUrl(id: string): Promise<{ embedUrl: string }> {
+  const token = getToken();
+  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  if (token) headers["Authorization"] = `Bearer ${token}`;
+  const res = await fetch(`${API_BASE}/videos/${id}/embed`, { method: "GET", headers });
+  if (res.status === 403) {
+    throw new EmbedForbiddenError();
+  }
+  if (res.status === 401) {
+    setToken(null);
+    localStorage.removeItem("ampli5_profile");
+    window.dispatchEvent(new CustomEvent("auth:session-expired"));
+    throw new Error("Session expired. Please log in again.");
+  }
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error((err as { message?: string }).message || `Request failed: ${res.status}`);
+  }
+  return res.json();
+}
+
 /** Convenience for GET requests with auth (e.g. from components that need simple fetch) */
 export async function fetchApi<T>(path: string, options: RequestInit = {}): Promise<T> {
   return apiFetch<T>(path, { ...options, method: options.method || "GET" });
