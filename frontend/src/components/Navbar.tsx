@@ -46,10 +46,8 @@ const Navbar = () => {
     <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <nav className="container flex h-16 items-center justify-between">
         <Link to="/" className="flex items-center gap-2">
-          <span className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2">
-            <img src="/logo.png" alt="Ampli5" className="h-8 object-contain" />
-            <span className="text-sm font-medium text-primary-foreground">.Life</span>
-          </span>
+          <img src="/logo.png" alt="Ampli5" className="h-9 object-contain" />
+          <span className="text-sm font-medium text-muted-foreground">.Life</span>
         </Link>
 
         {/* Desktop */}
