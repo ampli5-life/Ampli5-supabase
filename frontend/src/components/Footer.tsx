@@ -7,7 +7,9 @@ const Footer = () => (
       <div className="grid gap-8 md:grid-cols-4">
         <div>
           <Link to="/" className="inline-flex items-center gap-2">
-            <img src="/logo.png" alt="Ampli5" className="h-10 object-contain" />
+            <span className="flex rounded-md bg-white p-1.5">
+              <img src="/logo.png" alt="Ampli5" className="h-9 object-contain" />
+            </span>
             <span className="text-sm opacity-80">.Life</span>
           </Link>
           <p className="mt-3 text-sm opacity-80">
