@@ -68,11 +68,11 @@ export async function createSubscription(
     },
     body: JSON.stringify({ planId }),
   });
-  const data = await res.json().catch(() => ({}));
+  const resData = await res.json().catch(() => ({}));
   if (!res.ok) {
-    throw new Error((data as { error?: string }).error || `Request failed: ${res.status}`);
+    throw new Error((resData as { error?: string }).error || `Request failed: ${res.status}`);
   }
-  return data as { subscriptionId: string; approvalUrl: string };
+  return resData as { subscriptionId: string; approvalUrl: string };
 }
 
 export async function confirmSubscriptionBySession(sessionId: string): Promise<{
