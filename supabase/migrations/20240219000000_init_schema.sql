@@ -1,8 +1,7 @@
+CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+
 -- Ampli5 Supabase Schema Migration
 -- Migrates from Spring Boot / Flyway schema to Supabase
-
--- Enable UUID extension
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- Profiles: synced from auth.users (replaces users table)
 CREATE TABLE IF NOT EXISTS public.profiles (
@@ -17,7 +16,7 @@ CREATE TABLE IF NOT EXISTS public.profiles (
 
 -- Subscriptions
 CREATE TABLE IF NOT EXISTS public.subscriptions (
-  id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   paypal_subscription_id text UNIQUE,
   stripe_subscription_id text UNIQUE,
@@ -34,7 +33,7 @@ CREATE INDEX IF NOT EXISTS idx_subscriptions_user_status ON public.subscriptions
 
 -- Videos (add storage_path for paid Supabase Storage videos)
 CREATE TABLE IF NOT EXISTS public.videos (
-  id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   title text NOT NULL,
   description text NOT NULL DEFAULT '',
   youtube_url text NOT NULL,
@@ -50,7 +49,7 @@ CREATE TABLE IF NOT EXISTS public.videos (
 
 -- Events
 CREATE TABLE IF NOT EXISTS public.events (
-  id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   title text NOT NULL,
   date date NOT NULL,
   description text NOT NULL,
@@ -60,7 +59,7 @@ CREATE TABLE IF NOT EXISTS public.events (
 
 -- Blog posts
 CREATE TABLE IF NOT EXISTS public.blog_posts (
-  id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   title text NOT NULL,
   excerpt text NOT NULL,
   tag text NOT NULL,
@@ -71,14 +70,14 @@ CREATE TABLE IF NOT EXISTS public.blog_posts (
 
 -- Page content
 CREATE TABLE IF NOT EXISTS public.page_content (
-  id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   page_key text NOT NULL UNIQUE,
   content_json text
 );
 
 -- FAQs
 CREATE TABLE IF NOT EXISTS public.faqs (
-  id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   question text NOT NULL,
   answer text NOT NULL,
   sort_order integer
@@ -86,7 +85,7 @@ CREATE TABLE IF NOT EXISTS public.faqs (
 
 -- Schedules
 CREATE TABLE IF NOT EXISTS public.schedules (
-  id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   day_of_week text NOT NULL,
   time text NOT NULL,
   class_name text NOT NULL,
@@ -97,7 +96,7 @@ CREATE TABLE IF NOT EXISTS public.schedules (
 
 -- Testimonials
 CREATE TABLE IF NOT EXISTS public.testimonials (
-  id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   text text NOT NULL,
   author text NOT NULL,
   sort_order integer
@@ -105,7 +104,7 @@ CREATE TABLE IF NOT EXISTS public.testimonials (
 
 -- Team members
 CREATE TABLE IF NOT EXISTS public.team_members (
-  id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   name text NOT NULL,
   role text NOT NULL,
   bio text,
@@ -115,7 +114,7 @@ CREATE TABLE IF NOT EXISTS public.team_members (
 
 -- Apps
 CREATE TABLE IF NOT EXISTS public.apps (
-  id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   name text NOT NULL,
   description text,
   sort_order integer
@@ -123,7 +122,7 @@ CREATE TABLE IF NOT EXISTS public.apps (
 
 -- Books
 CREATE TABLE IF NOT EXISTS public.books (
-  id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   title text NOT NULL,
   author text NOT NULL,
   description text,
@@ -132,14 +131,14 @@ CREATE TABLE IF NOT EXISTS public.books (
 
 -- Recommended readings
 CREATE TABLE IF NOT EXISTS public.recommended_readings (
-  id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   title text NOT NULL,
   sort_order integer
 );
 
 -- Video channels
 CREATE TABLE IF NOT EXISTS public.video_channels (
-  id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   title text NOT NULL,
   url text,
   description text,
@@ -148,7 +147,7 @@ CREATE TABLE IF NOT EXISTS public.video_channels (
 
 -- Contact submissions (replaces contact email - store for admin to view)
 CREATE TABLE IF NOT EXISTS public.contact_submissions (
-  id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   name text NOT NULL,
   email text NOT NULL,
   message text NOT NULL,
