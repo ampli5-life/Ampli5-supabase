@@ -1,13 +1,8 @@
 // Supabase Edge Function: Create Stripe Checkout Session
 // POST with Bearer JWT; body: { planId: "silver" | "gold" }
+// Uses only native fetch (no Stripe SDK, no supabase-js) for Edge Runtime compatibility.
 
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import Stripe from "https://esm.sh/stripe@11.2.0?target=deno";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
-const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") ?? "", {
-  apiVersion: "2023-10-16",
-});
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -32,15 +27,20 @@ Deno.serve(async (req) => {
     const token = authHeader.replace("Bearer ", "");
     const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    const { data: { user }, error: userError } = await supabase.auth.getUser(token);
-    if (userError || !user) {
+    const userRes = await fetch(`${supabaseUrl}/auth/v1/user`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        apikey: supabaseServiceKey,
+      },
+    });
+    if (!userRes.ok) {
       return new Response(
         JSON.stringify({ error: "Invalid or expired token" }),
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+    const user = await userRes.json();
     const userId = user.id;
 
     const body = await req.json().catch(() => ({})) as { planId?: string };
@@ -69,18 +69,36 @@ Deno.serve(async (req) => {
       );
     }
 
-    const session = await stripe.checkout.sessions.create({
+    const stripeBody = new URLSearchParams({
       mode: "subscription",
-      line_items: [{ price: priceId, quantity: 1 }],
+      "line_items[0][price]": priceId,
+      "line_items[0][quantity]": "1",
       success_url: successUrl + (successUrl.includes("?") ? "&" : "?") + "session_id={CHECKOUT_SESSION_ID}",
       cancel_url: cancelUrl,
       client_reference_id: userId,
     });
 
+    const stripeRes = await fetch("https://api.stripe.com/v1/checkout/sessions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${Deno.env.get("STRIPE_SECRET_KEY") ?? ""}`,
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: stripeBody.toString(),
+    });
+
+    const sessionData = await stripeRes.json();
+    if (sessionData.error) {
+      return new Response(
+        JSON.stringify({ error: sessionData.error.message ?? "Stripe error" }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     return new Response(
       JSON.stringify({
-        subscriptionId: session.id,
-        approvalUrl: session.url,
+        subscriptionId: sessionData.id,
+        approvalUrl: sessionData.url,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
