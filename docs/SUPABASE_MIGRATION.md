@@ -60,7 +60,16 @@ Set these in the Render dashboard for the frontend service:
 
 - `VITE_SUPABASE_URL` – Project URL
 - `VITE_SUPABASE_ANON_KEY` – anon/public key (safe for frontend)
-- `VITE_GOOGLE_CLIENT_ID` – for Google sign-in button
+- `VITE_GOOGLE_CLIENT_ID` – optional; not needed when using Supabase Google OAuth redirect
+
+## Troubleshooting
+
+### Login/sign up fails with "Cross-Origin-Opener-Policy would block the window.postMessage call"
+
+This happens when the host (e.g. Render) sends a strict **Cross-Origin-Opener-Policy** (COOP) header (e.g. `same-origin`), which blocks the postMessage flow used by some auth flows. Fix it by either:
+
+- **On the host:** Do not send a strict COOP header for the app, or set it to `unsafe-none` for the site (e.g. in Render: Headers for the static site, path `/*`).
+- **In the app:** Google sign-in uses Supabase redirect OAuth (no popup/postMessage), so it is not affected by COOP once this flow is in use.
 
 ## Security
 
