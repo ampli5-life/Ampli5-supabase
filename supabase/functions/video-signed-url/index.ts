@@ -8,6 +8,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
@@ -81,16 +82,13 @@ Deno.serve(async (req) => {
       );
     }
 
-    const userRes = await fetch(`${supabaseUrl}/auth/v1/user`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    if (!userRes.ok) {
+    const { data: { user }, error: userError } = await supabase.auth.getUser(token);
+    if (userError || !user) {
       return new Response(
         JSON.stringify({ message: "Invalid or expired token" }),
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
-    const user = await userRes.json();
     const userId = user.id;
 
     const nowIso = new Date().toISOString();

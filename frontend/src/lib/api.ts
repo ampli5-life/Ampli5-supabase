@@ -152,27 +152,46 @@ export class EmbedForbiddenError extends Error {
   }
 }
 
+async function fetchVideoEmbedUrl(
+  id: string,
+  token: string | null
+): Promise<Response> {
+  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  if (token) headers["Authorization"] = `Bearer ${token}`;
+  return fetch(`${FUNCTIONS_BASE}/video-signed-url`, {
+    method: "POST",
+    headers,
+    body: JSON.stringify({ videoId: id }),
+  });
+}
+
 export async function getVideoEmbedUrl(
   id: string,
   options?: { sendAuth?: boolean }
 ): Promise<{ embedUrl: string; isDirectVideo?: boolean }> {
   const sendAuth = options?.sendAuth !== false;
-  const token = sendAuth ? getToken() : null;
-  const headers: Record<string, string> = { "Content-Type": "application/json" };
-  if (token) headers["Authorization"] = `Bearer ${token}`;
+  let token = sendAuth ? getToken() : null;
 
-  const res = await fetch(`${FUNCTIONS_BASE}/video-signed-url`, {
-    method: "POST",
-    headers,
-    body: JSON.stringify({ videoId: id }),
-  });
+  let res = await fetchVideoEmbedUrl(id, token);
 
   if (res.status === 403) throw new EmbedForbiddenError();
   if (res.status === 401 && sendAuth) {
-    setToken(null);
-    localStorage.removeItem("ampli5_profile");
-    window.dispatchEvent(new CustomEvent("auth:session-expired"));
-    throw new Error("Session expired. Please log in again.");
+    const { data, error } = await supabase.auth.refreshSession();
+    if (error || !data.session?.access_token) {
+      setToken(null);
+      localStorage.removeItem("ampli5_profile");
+      window.dispatchEvent(new CustomEvent("auth:session-expired"));
+      throw new Error("Session expired. Please log in again.");
+    }
+    setToken(data.session.access_token);
+    res = await fetchVideoEmbedUrl(id, data.session.access_token);
+    if (res.status === 403) throw new EmbedForbiddenError();
+    if (res.status === 401) {
+      setToken(null);
+      localStorage.removeItem("ampli5_profile");
+      window.dispatchEvent(new CustomEvent("auth:session-expired"));
+      throw new Error("Session expired. Please log in again.");
+    }
   }
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));

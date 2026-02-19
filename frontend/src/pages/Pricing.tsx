@@ -57,6 +57,8 @@ const Pricing = () => {
     }).catch(() => []);
   }, []);
 
+  const SUBSCRIBE_TIMEOUT_MS = 15000;
+
   const handleSubscribe = async (planId: string) => {
     if (planId !== "silver" && planId !== "gold") return;
 
@@ -68,7 +70,15 @@ const Pricing = () => {
     setError(null);
     setLoadingPlanId(planId);
     try {
-      const { approvalUrl } = await createSubscription(planId);
+      const { approvalUrl } = await Promise.race([
+        createSubscription(planId),
+        new Promise<never>((_, reject) =>
+          setTimeout(
+            () => reject(new Error("Checkout is taking too long. Please try again.")),
+            SUBSCRIBE_TIMEOUT_MS
+          )
+        ),
+      ]);
       if (approvalUrl) {
         window.location.href = approvalUrl;
         return;

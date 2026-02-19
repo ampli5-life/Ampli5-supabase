@@ -42,8 +42,10 @@ supabase secrets set STRIPE_PRICE_SILVER=price_...
 supabase secrets set STRIPE_PRICE_GOLD=price_...
 supabase secrets set STRIPE_WEBHOOK_SECRET=whsec_...
 supabase secrets set STRIPE_SUCCESS_URL=https://your-frontend.onrender.com/subscription-success
-supabase secrets set STRIPE_CANCEL_URL=https://your-frontend.onrender.com/
+supabase secrets set STRIPE_CANCEL_URL=https://your-frontend.onrender.com/pricing
 ```
+
+**Production:** `STRIPE_SUCCESS_URL` and `STRIPE_CANCEL_URL` must be set to your deployed frontend domain (e.g. Render). If unset, the function derives URLs from the request `Origin` header when present; otherwise it falls back to `http://localhost:5173`.
 
 `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` are automatically provided to Edge Functions.
 
@@ -68,10 +70,29 @@ Run all migrations so the `videos` storage bucket has RLS policies for admin upl
 
 ## Production checklist
 
+- **Stripe redirect URLs:** Set `STRIPE_SUCCESS_URL` and `STRIPE_CANCEL_URL` in Supabase Edge Function secrets to your production frontend URL (e.g. `https://ampli5-frontend-xxx.onrender.com/subscription-success` and `.../pricing`). Without these, Stripe may redirect to localhost after checkout.
 - **Environment:** Ensure `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` are set in production; the app logs a console warning if they are missing.
 - **Debug logging:** Agent/debug logging to localhost is gated with `import.meta.env.DEV` and does not run in production builds.
 - **Security:** RLS and admin checks are in place; avoid sending a strict COOP header on the host (see Troubleshooting).
 - **Error handling:** Consider adding a React error boundary around the app for a friendly fallback on uncaught errors.
+
+## Verification (end-to-end)
+
+After deploying, validate these flows:
+
+1. **Subscribe → Stripe → Success**
+   - Log in, go to Pricing, click Subscribe.
+   - Should redirect to Stripe checkout within ~15s (or show a timeout error).
+   - Complete payment; Stripe redirects to `/subscription-success`.
+   - `confirm-subscription` records the subscription; you are redirected home with active status.
+
+2. **Content stability**
+   - Browse Admin, Videos, Blog; leave the tab open 10+ minutes.
+   - Content should not disappear or log you out unexpectedly (no false 401s from Edge Functions).
+
+3. **Paid video playback**
+   - Not subscribed: paid video returns 403 (subscription required).
+   - Subscribed: paid video returns signed URL and plays.
 
 ## Troubleshooting
 
