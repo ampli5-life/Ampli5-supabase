@@ -117,7 +117,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // #region agent log
     const log = (msg: string, data: Record<string, unknown>) => { try { fetch('http://127.0.0.1:7244/ingest/a06809ba-2f2d-4027-ad1b-0c709d05e1cc',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'AuthContext.tsx:getSession',message:msg,data,timestamp:Date.now(),hypothesisId:'H2'})}); } catch (_) {} };
     // #endregion
-    function restoreFromStorage() {
+    function restoreFromStorage(): Profile | null {
       try {
         const stored = localStorage.getItem(PROFILE_KEY);
         if (stored) {
@@ -127,18 +127,38 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             setProfile(p);
             const t = localStorage.getItem(TOKEN_KEY);
             if (t) setToken(t);
-            return true;
+            return p;
           }
         }
       } catch {
         // ignore
       }
-      return false;
+      return null;
     }
-    if (restoreFromStorage()) setLoading(false);
-    const timeoutId = window.setTimeout(() => {
-      restoreFromStorage();
+    async function refreshProfileAdminFlag(profileId: string) {
+      const { data } = await supabase.from("profiles").select("is_admin").eq("id", profileId).maybeSingle();
+      if (data && typeof data.is_admin === "boolean") {
+        setProfile((prev) => {
+          if (!prev || prev.id !== profileId) return prev;
+          const next = { ...prev, is_admin: data.is_admin };
+          persistProfile(next);
+          return next;
+        });
+        setUser((prev) => {
+          if (!prev || prev.id !== profileId) return prev;
+          return { ...prev, is_admin: data.is_admin };
+        });
+      }
+    }
+    const restored = restoreFromStorage();
+    if (restored) {
       setLoading(false);
+      refreshProfileAdminFlag(restored.id);
+    }
+    const timeoutId = window.setTimeout(() => {
+      const restoredTimeout = restoreFromStorage();
+      setLoading(false);
+      if (restoredTimeout) refreshProfileAdminFlag(restoredTimeout.id);
     }, 3000);
     supabase.auth.getSession()
       .then(({ data: { session } }) => {
@@ -261,14 +281,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [loadProfile]
   );
 
-  const signOut = useCallback(async () => {
-    await supabase.auth.signOut();
+  const signOut = useCallback(() => {
     setToken(null);
     setUser(null);
     setProfile(null);
     setIsSubscribed(false);
     setSubscriptionInfo(null);
     persistProfile(null);
+    void supabase.auth.signOut().catch(() => {});
   }, [persistProfile]);
 
   const updateProfile = useCallback(
