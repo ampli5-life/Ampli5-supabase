@@ -73,7 +73,11 @@ const Index = () => {
     const log = (msg: string, data: Record<string, unknown>) => { try { fetch('http://127.0.0.1:7244/ingest/a06809ba-2f2d-4027-ad1b-0c709d05e1cc',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Index.tsx:homeFetch',message:msg,data,timestamp:Date.now(),hypothesisId:'H3'})}); } catch (_) {} };
     log('Promise.all started', {});
     // #endregion
-    Promise.all([
+    const HOME_LOAD_TIMEOUT_MS = 4000;
+    const timeoutPromise = new Promise<null>((resolve) => {
+      window.setTimeout(() => resolve(null), HOME_LOAD_TIMEOUT_MS);
+    });
+    const dataPromise = Promise.all([
       fetchPageContent("home_hero").then((json) => {
         try {
           return json ? (JSON.parse(json) as { title?: string; subtitle?: string }) : null;
@@ -84,19 +88,19 @@ const Index = () => {
       api.get<Video[]>("/videos").catch((e) => { log('videos failed', { err: String((e as Error)?.message) }); return []; }),
       api.get<BlogPost[]>("/blog").catch((e) => { log('blog failed', { err: String((e as Error)?.message) }); return []; }),
       api.get<Testimonial[]>("/testimonials").catch((e) => { log('testimonials failed', { err: String((e as Error)?.message) }); return []; }),
-    ]).then(([h, videos, blog, test]) => {
-      setHero(h ?? null);
-      setFeaturedVideos(Array.isArray(videos) ? videos.filter((v) => !v.is_paid).slice(0, 6) : []);
-      setBlogPosts(Array.isArray(blog) ? blog.slice(0, 3) : []);
-      setTestimonials(Array.isArray(test) ? test : []);
+    ]);
+    Promise.race([dataPromise, timeoutPromise]).then((result) => {
+      if (result !== null) {
+        const [h, videos, blog, test] = result;
+        setHero(h ?? null);
+        setFeaturedVideos(Array.isArray(videos) ? videos.filter((v) => !v.is_paid).slice(0, 6) : []);
+        setBlogPosts(Array.isArray(blog) ? blog.slice(0, 3) : []);
+        setTestimonials(Array.isArray(test) ? test : []);
+      }
     }).catch((e) => {
-      // #region agent log
       log('Promise.all rejected', { err: String((e as Error)?.message) });
-      // #endregion
     }).finally(() => {
-      // #region agent log
       log('Promise.all finally', { setLoadingFalse: true });
-      // #endregion
       setLoading(false);
     });
   }, []);

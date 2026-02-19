@@ -10,6 +10,7 @@ import { supabase } from "@/lib/supabase";
 import {
   getToken,
   setToken,
+  TOKEN_KEY,
   getSubscriptionStatus,
   type SubscriptionStatus,
 } from "@/lib/api";
@@ -116,9 +117,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // #region agent log
     const log = (msg: string, data: Record<string, unknown>) => { try { fetch('http://127.0.0.1:7244/ingest/a06809ba-2f2d-4027-ad1b-0c709d05e1cc',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'AuthContext.tsx:getSession',message:msg,data,timestamp:Date.now(),hypothesisId:'H2'})}); } catch (_) {} };
     // #endregion
+    function restoreFromStorage() {
+      try {
+        const stored = localStorage.getItem(PROFILE_KEY);
+        if (stored) {
+          const p = JSON.parse(stored) as Profile | null;
+          if (p && p.id && p.email) {
+            setUser(p);
+            setProfile(p);
+            const t = localStorage.getItem(TOKEN_KEY);
+            if (t) setToken(t);
+            return true;
+          }
+        }
+      } catch {
+        // ignore
+      }
+      return false;
+    }
+    if (restoreFromStorage()) setLoading(false);
     const timeoutId = window.setTimeout(() => {
+      restoreFromStorage();
       setLoading(false);
-    }, 5000);
+    }, 3000);
     supabase.auth.getSession()
       .then(({ data: { session } }) => {
         clearTimeout(timeoutId);
