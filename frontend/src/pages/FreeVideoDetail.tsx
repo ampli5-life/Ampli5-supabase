@@ -61,7 +61,7 @@ const FreeVideoDetail = () => {
     }
     setEmbedLoading(true);
     setEmbedForbidden(false);
-    getVideoEmbedUrl(id)
+    getVideoEmbedUrl(id, { sendAuth: isPaid })
       .then((r) => {
         setEmbedUrl(r.embedUrl);
         setIsDirectVideo(r.isDirectVideo ?? false);
@@ -72,7 +72,7 @@ const FreeVideoDetail = () => {
         setEmbedForbidden(err instanceof EmbedForbiddenError);
       })
       .finally(() => setEmbedLoading(false));
-  }, [id, video, canAttemptPlay]);
+  }, [id, video, canAttemptPlay, isPaid]);
 
   if (loading) {
     return (

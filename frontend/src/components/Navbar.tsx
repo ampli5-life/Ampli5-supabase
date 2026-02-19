@@ -15,6 +15,7 @@ const baseNavLinks = [
   { label: "Home", to: "/" },
   { label: "About", to: "/about" },
   { label: "Videos", to: "/free-videos" },
+  { label: "News", to: "/news" },
   { label: "Blog", to: "/blog" },
   { label: "Books", to: "/books" },
   { label: "Pricing", to: "/pricing" },

@@ -22,7 +22,6 @@ import {
   Trash2,
   ArrowLeft,
   Lock,
-  Unlock,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -165,7 +164,7 @@ function extractYoutubeVideoId(url: string): string | null {
   return match ? match[1] : null;
 }
 
-const emptyVideoForm = {
+const emptyFreeVideoForm = {
   title: "",
   description: "",
   youtube_url: "",
@@ -173,7 +172,15 @@ const emptyVideoForm = {
   category: "",
   duration: 0,
   instructor: "",
-  is_paid: false,
+};
+
+const emptyPaidVideoForm = {
+  title: "",
+  description: "",
+  thumbnail_url: "",
+  category: "",
+  duration: 0,
+  instructor: "",
 };
 
 function UsersSection() {
@@ -309,7 +316,9 @@ function UsersSection() {
 function VideosSection() {
   const [items, setItems] = useState<Record<string, unknown>[]>([]);
   const [loading, setLoading] = useState(true);
+  const [videoSubTab, setVideoSubTab] = useState<"free" | "paid">("free");
   const [form, setForm] = useState<Record<string, unknown> | null>(null);
+  const [formMode, setFormMode] = useState<"free" | "paid">("free");
   const [videoFile, setVideoFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
 
@@ -330,47 +339,64 @@ function VideosSection() {
     if (form != null) setVideoFile(null);
   }, [form?.id]);
 
-  const save = async () => {
-    try {
-      const payload = { ...form } as Record<string, unknown>;
-      if (!payload.thumbnail_url && payload.youtube_url) {
-        const vid = extractYoutubeVideoId(String(payload.youtube_url));
-        if (vid) payload.thumbnail_url = `https://img.youtube.com/vi/${vid}/mqdefault.jpg`;
-      }
-      const isPaid = Boolean(payload.is_paid);
-      if (isPaid) {
-        if (videoFile) {
-          setUploading(true);
-          const pathPrefix = form?.id ?? crypto.randomUUID();
-          const path = `${pathPrefix}/${videoFile.name}`;
-          const { error: uploadError } = await supabase.storage.from("videos").upload(path, videoFile, { upsert: true });
-          if (uploadError) {
-            setUploading(false);
-            toast.error(uploadError.message);
-            return;
-          }
-          payload.storage_path = path;
-          setUploading(false);
-        } else if (!payload.storage_path) {
-          toast.error("Premium videos require an uploaded video file or an existing file.");
-          return;
-        }
-      } else {
-        payload.storage_path = null;
-      }
-      if (form?.id) {
-        await api.put(`/videos/${form.id}`, payload);
-      } else {
-        await api.post("/videos", payload);
-      }
-      setForm(null);
-      setVideoFile(null);
-      load();
-      toast.success("Saved");
-    } catch (e) {
-      setUploading(false);
-      toast.error((e as Error).message);
+  const freeItems = items.filter((v) => !v.is_paid);
+  const paidItems = items.filter((v) => v.is_paid);
+
+  const saveFree = async () => {
+    const payload = { ...form } as Record<string, unknown>;
+    if (!String(payload.youtube_url || "").trim()) {
+      toast.error("YouTube URL is required for free videos.");
+      return;
     }
+    if (!payload.thumbnail_url && payload.youtube_url) {
+      const vid = extractYoutubeVideoId(String(payload.youtube_url));
+      if (vid) payload.thumbnail_url = `https://img.youtube.com/vi/${vid}/mqdefault.jpg`;
+    }
+    payload.is_paid = false;
+    payload.storage_path = null;
+    if (form?.id) {
+      await api.put(`/videos/${form.id}`, payload);
+    } else {
+      await api.post("/videos", payload);
+    }
+    setForm(null);
+    load();
+    toast.success("Saved");
+  };
+
+  const savePaid = async () => {
+    const payload = { ...form } as Record<string, unknown>;
+    payload.is_paid = true;
+    if (videoFile) {
+      setUploading(true);
+      const pathPrefix = form?.id ?? crypto.randomUUID();
+      const path = `${pathPrefix}/${videoFile.name}`;
+      const { error: uploadError } = await supabase.storage.from("videos").upload(path, videoFile, { upsert: true });
+      if (uploadError) {
+        setUploading(false);
+        toast.error(uploadError.message);
+        return;
+      }
+      payload.storage_path = path;
+      setUploading(false);
+    } else if (!form?.id && !payload.storage_path) {
+      toast.error("Upload a video file for new paid videos.");
+      return;
+    }
+    if (form?.id) {
+      await api.put(`/videos/${form.id}`, payload);
+    } else {
+      await api.post("/videos", payload);
+    }
+    setForm(null);
+    setVideoFile(null);
+    load();
+    toast.success("Saved");
+  };
+
+  const save = () => {
+    if (formMode === "free") void saveFree();
+    else void savePaid();
   };
 
   const del = async (item: unknown) => {
@@ -380,52 +406,41 @@ function VideosSection() {
     toast.success("Deleted");
   };
 
-  const togglePremium = async (item: Record<string, unknown>) => {
-    try {
-      await api.put(`/videos/${item.id}`, { ...item, is_paid: !item.is_paid });
-      load();
-      toast.success("Updated");
-    } catch (e) {
-      toast.error((e as Error).message);
-    }
-  };
-
   if (loading) return <p className="text-muted-foreground">Loading...</p>;
 
   if (form) {
+    const isFree = formMode === "free";
     return (
       <Card className="p-6">
-        <h3 className="mb-4 font-semibold">{form.id ? "Edit Video" : "Add Video"}</h3>
+        <h3 className="mb-4 font-semibold">{form.id ? (isFree ? "Edit Free Video" : "Edit Paid Video") : isFree ? "Add Free Video" : "Add Paid Video"}</h3>
         <div className="space-y-4">
           <Input placeholder="Title" value={String(form.title || "")} onChange={(e) => setForm({ ...form, title: e.target.value })} />
           <Textarea placeholder="Description" value={String(form.description || "")} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={2} />
-          <Input placeholder="YouTube URL" value={String(form.youtube_url || "")} onChange={(e) => setForm({ ...form, youtube_url: e.target.value })} />
-          <Input placeholder="Thumbnail URL (optional)" value={String(form.thumbnail_url || "")} onChange={(e) => setForm({ ...form, thumbnail_url: e.target.value })} />
+          {isFree ? (
+            <>
+              <Input placeholder="YouTube URL (required)" value={String(form.youtube_url || "")} onChange={(e) => setForm({ ...form, youtube_url: e.target.value })} />
+              <Input placeholder="Thumbnail URL (optional, or leave blank to use YouTube thumbnail)" value={String(form.thumbnail_url || "")} onChange={(e) => setForm({ ...form, thumbnail_url: e.target.value })} />
+            </>
+          ) : (
+            <>
+              <Input placeholder="Thumbnail URL (optional)" value={String(form.thumbnail_url || "")} onChange={(e) => setForm({ ...form, thumbnail_url: e.target.value })} />
+              <p className="text-xs text-muted-foreground">Upload video file. Required for new paid videos.</p>
+              <input
+                type="file"
+                accept="video/mp4,video/webm,video/ogg"
+                onChange={(e) => setVideoFile(e.target.files?.[0] ?? null)}
+                className="text-sm"
+              />
+              {form.storage_path && !videoFile && (
+                <span className="text-xs text-muted-foreground">Current file: {String(form.storage_path)}</span>
+              )}
+            </>
+          )}
           <div className="flex gap-4">
             <Input placeholder="Category" value={String(form.category || "")} onChange={(e) => setForm({ ...form, category: e.target.value })} className="flex-1" />
             <Input type="number" placeholder="Duration (min)" value={form.duration ?? ""} onChange={(e) => setForm({ ...form, duration: parseInt(e.target.value, 10) || 0 })} className="w-28" />
           </div>
           <Input placeholder="Instructor" value={String(form.instructor || "")} onChange={(e) => setForm({ ...form, instructor: e.target.value })} />
-          <label className="flex items-center gap-2">
-            <input type="checkbox" checked={Boolean(form.is_paid)} onChange={(e) => setForm({ ...form, is_paid: e.target.checked })} />
-            <span className="text-sm">Premium (paid)</span>
-          </label>
-          {Boolean(form.is_paid) && (
-            <>
-              <p className="text-xs text-muted-foreground">Free: use YouTube URL. Premium: upload a video file (or keep existing).</p>
-              <div className="flex flex-col gap-1">
-                <input
-                  type="file"
-                  accept="video/mp4,video/webm,video/ogg"
-                  onChange={(e) => setVideoFile(e.target.files?.[0] ?? null)}
-                  className="text-sm"
-                />
-                {form.storage_path && !videoFile && (
-                  <span className="text-xs text-muted-foreground">Current file: {String(form.storage_path)}</span>
-                )}
-              </div>
-            </>
-          )}
           <div className="flex gap-2">
             <Button onClick={save} disabled={uploading}>{uploading ? "Uploading..." : "Save"}</Button>
             <Button variant="outline" onClick={() => { setForm(null); setVideoFile(null); }}>Cancel</Button>
@@ -437,32 +452,46 @@ function VideosSection() {
 
   return (
     <>
-      <p className="mb-4 text-sm text-muted-foreground">Videos appear in the library. Toggle Premium to require a subscription.</p>
-      <CrudList
-        items={items}
-        emptyLabel="videos"
-        onAdd={() => setForm({ ...emptyVideoForm })}
-        onEdit={(item) => setForm(item as Record<string, unknown>)}
-        onDelete={del}
-        renderItem={(item: unknown) => {
-          const v = item as { title?: string; is_paid?: boolean };
-          return (
-            <div className="flex items-center gap-3">
-              <span className="font-medium">{v.title}</span>
-              {v.is_paid ? (
+      <div className="mb-4 flex gap-2">
+        <Button variant={videoSubTab === "free" ? "default" : "outline"} size="sm" onClick={() => setVideoSubTab("free")}>Free Videos</Button>
+        <Button variant={videoSubTab === "paid" ? "default" : "outline"} size="sm" onClick={() => setVideoSubTab("paid")}>Paid Videos</Button>
+      </div>
+      <p className="mb-4 text-sm text-muted-foreground">
+        {videoSubTab === "free" ? "Free videos use a YouTube URL and play without login. Paid videos are uploaded to storage and require a subscription." : "Paid videos require a subscription. Upload the video file below."}
+      </p>
+      {videoSubTab === "free" && (
+        <CrudList
+          items={freeItems}
+          emptyLabel="free videos"
+          onAdd={() => { setFormMode("free"); setForm({ ...emptyFreeVideoForm }); }}
+          onEdit={(item) => { setFormMode("free"); setForm(item as Record<string, unknown>); }}
+          onDelete={del}
+          renderItem={(item: unknown) => {
+            const v = item as { title?: string };
+            return <span className="font-medium">{v.title}</span>;
+          }}
+        />
+      )}
+      {videoSubTab === "paid" && (
+        <CrudList
+          items={paidItems}
+          emptyLabel="paid videos"
+          onAdd={() => { setFormMode("paid"); setForm({ ...emptyPaidVideoForm }); }}
+          onEdit={(item) => { setFormMode("paid"); setForm(item as Record<string, unknown>); }}
+          onDelete={del}
+          renderItem={(item: unknown) => {
+            const v = item as { title?: string };
+            return (
+              <div className="flex items-center gap-3">
+                <span className="font-medium">{v.title}</span>
                 <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800 dark:bg-amber-900/30 dark:text-amber-400">
                   <Lock size={12} /> Premium
                 </span>
-              ) : (
-                <span className="text-xs text-muted-foreground">Free</span>
-              )}
-              <Button variant="ghost" size="sm" className="h-7 px-2" onClick={(e) => { e.stopPropagation(); togglePremium(v as Record<string, unknown>); }}>
-                {v.is_paid ? <Unlock size={14} /> : <Lock size={14} />}
-              </Button>
-            </div>
-          );
-        }}
-      />
+              </div>
+            );
+          }}
+        />
+      )}
     </>
   );
 }

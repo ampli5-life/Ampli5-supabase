@@ -148,8 +148,12 @@ export class EmbedForbiddenError extends Error {
   }
 }
 
-export async function getVideoEmbedUrl(id: string): Promise<{ embedUrl: string; isDirectVideo?: boolean }> {
-  const token = getToken();
+export async function getVideoEmbedUrl(
+  id: string,
+  options?: { sendAuth?: boolean }
+): Promise<{ embedUrl: string; isDirectVideo?: boolean }> {
+  const sendAuth = options?.sendAuth !== false;
+  const token = sendAuth ? getToken() : null;
   const headers: Record<string, string> = { "Content-Type": "application/json" };
   if (token) headers["Authorization"] = `Bearer ${token}`;
 
@@ -160,7 +164,7 @@ export async function getVideoEmbedUrl(id: string): Promise<{ embedUrl: string; 
   });
 
   if (res.status === 403) throw new EmbedForbiddenError();
-  if (res.status === 401) {
+  if (res.status === 401 && sendAuth) {
     setToken(null);
     localStorage.removeItem("ampli5_profile");
     window.dispatchEvent(new CustomEvent("auth:session-expired"));

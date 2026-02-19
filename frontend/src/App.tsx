@@ -21,6 +21,7 @@ import Register from "./pages/Register";
 import Profile from "./pages/Profile";
 import SubscriptionSuccess from "./pages/SubscriptionSuccess";
 import Admin from "./pages/Admin";
+import News from "./pages/News";
 import NotFound from "./pages/NotFound";
 
 const App = () => (
@@ -37,6 +38,7 @@ const App = () => (
             <Route path="/pricing" element={<Pricing />} />
             <Route path="/free-videos" element={<FreeVideos />} />
             <Route path="/free-videos/:id" element={<FreeVideoDetail />} />
+            <Route path="/news" element={<News />} />
             <Route path="/blog" element={<Blog />} />
             <Route path="/blog/:slug" element={<BlogPost />} />
             <Route path="/books" element={<Books />} />
