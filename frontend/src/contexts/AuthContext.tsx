@@ -113,20 +113,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) {
-        setToken(session.access_token);
-        loadProfile(session.user);
-      } else {
-        setToken(null);
-        setUser(null);
-        setProfile(null);
-        setIsSubscribed(false);
-        setSubscriptionInfo(null);
-        persistProfile(null);
-      }
-      setLoading(false);
-    });
+    // #region agent log
+    const log = (msg: string, data: Record<string, unknown>) => { try { fetch('http://127.0.0.1:7244/ingest/a06809ba-2f2d-4027-ad1b-0c709d05e1cc',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'AuthContext.tsx:getSession',message:msg,data,timestamp:Date.now(),hypothesisId:'H2'})}); } catch (_) {} };
+    // #endregion
+    supabase.auth.getSession()
+      .then(({ data: { session } }) => {
+        // #region agent log
+        log('getSession resolved', { hasSession: !!session, hasUser: !!session?.user });
+        // #endregion
+        if (session?.user) {
+          setToken(session.access_token);
+          loadProfile(session.user);
+        } else {
+          setToken(null);
+          setUser(null);
+          setProfile(null);
+          setIsSubscribed(false);
+          setSubscriptionInfo(null);
+          persistProfile(null);
+        }
+        setLoading(false);
+      })
+      .catch((err) => {
+        // #region agent log
+        log('getSession rejected', { error: String(err?.message ?? err), name: err?.name });
+        // #endregion
+        setLoading(false);
+      });
   }, [loadProfile, persistProfile]);
 
   useEffect(() => {
