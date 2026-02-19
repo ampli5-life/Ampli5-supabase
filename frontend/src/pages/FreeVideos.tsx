@@ -26,7 +26,17 @@ const FreeVideos = () => {
   const [selectedCategory, setSelectedCategory] = useState("All");
 
   useEffect(() => {
-    api.get<Video[]>("/videos").then((data) => setVideos(Array.isArray(data) ? data : [])).catch(() => []).finally(() => setLoading(false));
+    const VIDEO_LOAD_TIMEOUT_MS = 12000;
+    const timeoutPromise = new Promise<Video[]>((resolve) => {
+      window.setTimeout(() => resolve([]), VIDEO_LOAD_TIMEOUT_MS);
+    });
+    Promise.race([
+      api.get<Video[]>("/videos"),
+      timeoutPromise,
+    ])
+      .then((data) => setVideos(Array.isArray(data) ? data : []))
+      .catch(() => setVideos([]))
+      .finally(() => setLoading(false));
   }, []);
 
   const categories = ["All", ...Array.from(new Set((videos || []).map((v) => v.category).filter(Boolean) as string[]))];

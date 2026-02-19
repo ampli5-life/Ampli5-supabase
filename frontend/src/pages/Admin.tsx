@@ -367,6 +367,8 @@ function VideosSection() {
   const savePaid = async () => {
     const payload = { ...form } as Record<string, unknown>;
     payload.is_paid = true;
+    payload.youtube_url = payload.youtube_url ?? "";
+    payload.thumbnail_url = payload.thumbnail_url ?? "";
     if (videoFile) {
       setUploading(true);
       const pathPrefix = form?.id ?? crypto.randomUUID();
