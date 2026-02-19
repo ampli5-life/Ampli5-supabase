@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { api } from "@/lib/api";
+import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import {
   Video,
@@ -181,6 +182,7 @@ function UsersSection() {
   const [loading, setLoading] = useState(true);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [createForm, setCreateForm] = useState({ email: "", password: "", fullName: "", admin: false });
+  const [searchQuery, setSearchQuery] = useState("");
 
   const isUserAdmin = (u: { admin?: boolean; isAdmin?: boolean }) => u.admin === true || u.isAdmin === true;
 
@@ -270,21 +272,35 @@ function UsersSection() {
           </div>
         </Card>
       )}
+      <Input
+        placeholder="Search by name or email"
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+        className="max-w-sm"
+      />
       <div className="space-y-2">
-        {items.map((u) => (
-          <Card key={u.id} className="flex items-center justify-between p-4">
-            <div>
-              <span className="font-medium">{u.fullName ?? u.full_name ?? "—"}</span>
-              <span className="text-muted-foreground ml-2">({u.email})</span>
-              {(u.admin || u.isAdmin) && <span className="ml-2 rounded bg-primary/20 px-2 py-0.5 text-xs font-medium text-primary">Admin</span>}
-            </div>
-            {u.id !== profile?.id && (
-              <Button variant="outline" size="sm" onClick={() => toggleAdmin(u)}>
-                {isUserAdmin(u) ? "Remove admin" : "Make admin"}
-              </Button>
-            )}
-          </Card>
-        ))}
+        {items
+          .filter((u) => {
+            const q = searchQuery.trim().toLowerCase();
+            if (!q) return true;
+            const name = (u.fullName ?? u.full_name ?? "").toLowerCase();
+            const email = (u.email ?? "").toLowerCase();
+            return name.includes(q) || email.includes(q);
+          })
+          .map((u) => (
+            <Card key={u.id} className="flex items-center justify-between p-4">
+              <div>
+                <span className="font-medium">{u.fullName ?? u.full_name ?? "—"}</span>
+                <span className="text-muted-foreground ml-2">({u.email})</span>
+                {(u.admin || u.isAdmin) && <span className="ml-2 rounded bg-primary/20 px-2 py-0.5 text-xs font-medium text-primary">Admin</span>}
+              </div>
+              {u.id !== profile?.id && (
+                <Button variant="outline" size="sm" onClick={() => toggleAdmin(u)}>
+                  {isUserAdmin(u) ? "Remove admin" : "Make admin"}
+                </Button>
+              )}
+            </Card>
+          ))}
       </div>
     </div>
   );
@@ -294,6 +310,8 @@ function VideosSection() {
   const [items, setItems] = useState<Record<string, unknown>[]>([]);
   const [loading, setLoading] = useState(true);
   const [form, setForm] = useState<Record<string, unknown> | null>(null);
+  const [videoFile, setVideoFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
 
   const load = async () => {
     try {
@@ -308,6 +326,9 @@ function VideosSection() {
   useEffect(() => {
     load();
   }, []);
+  useEffect(() => {
+    if (form != null) setVideoFile(null);
+  }, [form?.id]);
 
   const save = async () => {
     try {
@@ -316,15 +337,38 @@ function VideosSection() {
         const vid = extractYoutubeVideoId(String(payload.youtube_url));
         if (vid) payload.thumbnail_url = `https://img.youtube.com/vi/${vid}/mqdefault.jpg`;
       }
+      const isPaid = Boolean(payload.is_paid);
+      if (isPaid) {
+        if (videoFile) {
+          setUploading(true);
+          const pathPrefix = form?.id ?? crypto.randomUUID();
+          const path = `${pathPrefix}/${videoFile.name}`;
+          const { error: uploadError } = await supabase.storage.from("videos").upload(path, videoFile, { upsert: true });
+          if (uploadError) {
+            setUploading(false);
+            toast.error(uploadError.message);
+            return;
+          }
+          payload.storage_path = path;
+          setUploading(false);
+        } else if (!payload.storage_path) {
+          toast.error("Premium videos require an uploaded video file or an existing file.");
+          return;
+        }
+      } else {
+        payload.storage_path = null;
+      }
       if (form?.id) {
         await api.put(`/videos/${form.id}`, payload);
       } else {
         await api.post("/videos", payload);
       }
       setForm(null);
+      setVideoFile(null);
       load();
       toast.success("Saved");
     } catch (e) {
+      setUploading(false);
       toast.error((e as Error).message);
     }
   };
@@ -366,9 +410,25 @@ function VideosSection() {
             <input type="checkbox" checked={Boolean(form.is_paid)} onChange={(e) => setForm({ ...form, is_paid: e.target.checked })} />
             <span className="text-sm">Premium (paid)</span>
           </label>
+          {Boolean(form.is_paid) && (
+            <>
+              <p className="text-xs text-muted-foreground">Free: use YouTube URL. Premium: upload a video file (or keep existing).</p>
+              <div className="flex flex-col gap-1">
+                <input
+                  type="file"
+                  accept="video/mp4,video/webm,video/ogg"
+                  onChange={(e) => setVideoFile(e.target.files?.[0] ?? null)}
+                  className="text-sm"
+                />
+                {form.storage_path && !videoFile && (
+                  <span className="text-xs text-muted-foreground">Current file: {String(form.storage_path)}</span>
+                )}
+              </div>
+            </>
+          )}
           <div className="flex gap-2">
-            <Button onClick={save}>Save</Button>
-            <Button variant="outline" onClick={() => setForm(null)}>Cancel</Button>
+            <Button onClick={save} disabled={uploading}>{uploading ? "Uploading..." : "Save"}</Button>
+            <Button variant="outline" onClick={() => { setForm(null); setVideoFile(null); }}>Cancel</Button>
           </div>
         </div>
       </Card>
@@ -560,7 +620,13 @@ function SchedulesSection() {
 
   const save = async () => {
     try {
-      const body = { dayOfWeek: form?.dayOfWeek, time: form?.time, className: form?.className, instructor: form?.instructor, level: form?.level };
+      const body = {
+        dayOfWeek: form?.dayOfWeek ?? form?.day_of_week,
+        time: form?.time,
+        className: form?.className ?? form?.class_name,
+        instructor: form?.instructor,
+        level: form?.level,
+      };
       if (form?.id) await api.put(`/schedules/${form.id}`, body);
       else await api.post("/schedules", body);
       setForm(null);
@@ -583,9 +649,9 @@ function SchedulesSection() {
       <Card className="p-6">
         <h3 className="mb-4 font-semibold">{form.id ? "Edit Schedule" : "Add Schedule"}</h3>
         <div className="space-y-4">
-          <Input placeholder="Day of week" value={String(form.dayOfWeek || "")} onChange={(e) => setForm({ ...form, dayOfWeek: e.target.value })} />
+          <Input placeholder="Day of week" value={String(form.dayOfWeek ?? form.day_of_week ?? "")} onChange={(e) => setForm({ ...form, dayOfWeek: e.target.value })} />
           <Input placeholder="Time" value={String(form.time || "")} onChange={(e) => setForm({ ...form, time: e.target.value })} />
-          <Input placeholder="Class name" value={String(form.className || "")} onChange={(e) => setForm({ ...form, className: e.target.value })} />
+          <Input placeholder="Class name" value={String(form.className ?? form.class_name ?? "")} onChange={(e) => setForm({ ...form, className: e.target.value })} />
           <Input placeholder="Instructor" value={String(form.instructor || "")} onChange={(e) => setForm({ ...form, instructor: e.target.value })} />
           <Input placeholder="Level" value={String(form.level || "")} onChange={(e) => setForm({ ...form, level: e.target.value })} />
           <div className="flex gap-2">
@@ -606,8 +672,8 @@ function SchedulesSection() {
         onEdit={(i) => setForm(i as Record<string, unknown>)}
         onDelete={del}
         renderItem={(i: unknown) => {
-          const x = i as { dayOfWeek?: string; time?: string; className?: string };
-          return <span>{x.dayOfWeek} {x.time} — {x.className}</span>;
+          const x = i as { dayOfWeek?: string; day_of_week?: string; time?: string; className?: string; class_name?: string };
+          return <span>{x.dayOfWeek ?? x.day_of_week} {x.time} — {x.className ?? x.class_name}</span>;
         }}
       />
     </>

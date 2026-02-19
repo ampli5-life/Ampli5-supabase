@@ -115,9 +115,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 
   useEffect(() => {
-    // #region agent log
-    const log = (msg: string, data: Record<string, unknown>) => { try { fetch('http://127.0.0.1:7244/ingest/a06809ba-2f2d-4027-ad1b-0c709d05e1cc',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'AuthContext.tsx:getSession',message:msg,data,timestamp:Date.now(),hypothesisId:'H2'})}); } catch (_) {} };
-    // #endregion
+    const log = import.meta.env.DEV
+      ? (msg: string, data: Record<string, unknown>) => { try { fetch('http://127.0.0.1:7244/ingest/a06809ba-2f2d-4027-ad1b-0c709d05e1cc',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'AuthContext.tsx:getSession',message:msg,data,timestamp:Date.now(),hypothesisId:'H2'})}); } catch (_) {} }
+      : () => {};
     function restoreFromStorage(): Profile | null {
       try {
         const stored = localStorage.getItem(PROFILE_KEY);

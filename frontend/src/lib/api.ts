@@ -190,6 +190,19 @@ const PATH_TO_TABLE: Record<string, string> = {
   "/users": "profiles",
 };
 
+function mapScheduleBody(body: Record<string, unknown>): Record<string, unknown> {
+  const mapped = { ...body };
+  if ("dayOfWeek" in mapped) {
+    mapped.day_of_week = mapped.dayOfWeek;
+    delete mapped.dayOfWeek;
+  }
+  if ("className" in mapped) {
+    mapped.class_name = mapped.className;
+    delete mapped.className;
+  }
+  return mapped;
+}
+
 function resolveTable(path: string): { table: string; key?: string; pageKey?: boolean } | null {
   const normalized = path.replace(/^\/+/, "").replace(/\/$/, "");
   if (normalized.startsWith("page-content/key/")) {
@@ -237,7 +250,9 @@ async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> 
       .eq("page_key", key)
       .maybeSingle();
     if (error) {
-      try { fetch('http://127.0.0.1:7244/ingest/a06809ba-2f2d-4027-ad1b-0c709d05e1cc',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'api.ts:page_content_key',message:'Supabase page_content error',data:{key,errorMessage:error.message},timestamp:Date.now(),hypothesisId:'H5'})}); } catch (_) {}
+      if (import.meta.env.DEV) {
+        try { fetch('http://127.0.0.1:7244/ingest/a06809ba-2f2d-4027-ad1b-0c709d05e1cc',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'api.ts:page_content_key',message:'Supabase page_content error',data:{key,errorMessage:error.message},timestamp:Date.now(),hypothesisId:'H5'})}); } catch (_) {}
+      }
       throw new Error(error.message);
     }
     return data as T;
@@ -256,12 +271,12 @@ async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> 
       if (error) throw new Error(error.message);
       return data as T;
     }
-    const sortCol = table === "page_content" ? "page_key" : "sort_order";
+    const sortCol = table === "page_content" ? "page_key" : table === "videos" ? "created_at" : "sort_order";
     const { data, error } = await supabase.from(table).select("*").order(sortCol, { ascending: true });
     if (error) {
-      // #region agent log
-      try { fetch('http://127.0.0.1:7244/ingest/a06809ba-2f2d-4027-ad1b-0c709d05e1cc',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'api.ts:GET',message:'Supabase GET error',data:{table,path,errorMessage:error.message},timestamp:Date.now(),hypothesisId:'H5'})}); } catch (_) {}
-      // #endregion
+      if (import.meta.env.DEV) {
+        try { fetch('http://127.0.0.1:7244/ingest/a06809ba-2f2d-4027-ad1b-0c709d05e1cc',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'api.ts:GET',message:'Supabase GET error',data:{table,path,errorMessage:error.message},timestamp:Date.now(),hypothesisId:'H5'})}); } catch (_) {}
+      }
       throw new Error(error.message);
     }
     return data as T;
@@ -306,7 +321,8 @@ async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> 
     }
 
     const body = JSON.parse((options as { body: string }).body ?? "{}") as Record<string, unknown>;
-    const { data, error } = await supabase.from(table).insert(body).select().single();
+    const insertBody = table === "schedules" ? mapScheduleBody(body) : body;
+    const { data, error } = await supabase.from(table).insert(insertBody).select().single();
     if (error) throw new Error(error.message);
     return data as T;
   }
@@ -315,7 +331,8 @@ async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> 
     const body = JSON.parse((options as { body: string }).body ?? "{}") as Record<string, unknown>;
     if (!key) throw new Error("ID required for update");
     const { id: _id, admin, ...rest } = body;
-    const updates = { ...rest };
+    let updates: Record<string, unknown> = { ...rest };
+    if (table === "schedules") updates = mapScheduleBody(updates);
     if (table === "profiles" && typeof admin === "boolean") {
       (updates as Record<string, unknown>).is_admin = admin;
     }

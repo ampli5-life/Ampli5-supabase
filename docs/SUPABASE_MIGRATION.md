@@ -58,9 +58,20 @@ supabase secrets set STRIPE_CANCEL_URL=https://your-frontend.onrender.com/
 
 Set these in the Render dashboard for the frontend service:
 
-- `VITE_SUPABASE_URL` – Project URL
-- `VITE_SUPABASE_ANON_KEY` – anon/public key (safe for frontend)
+- `VITE_SUPABASE_URL` – Project URL (required)
+- `VITE_SUPABASE_ANON_KEY` – anon/public key (required; safe for frontend)
 - `VITE_GOOGLE_CLIENT_ID` – optional; not needed when using Supabase Google OAuth redirect
+
+### 8. Apply storage migration (admin video uploads)
+
+Run all migrations so the `videos` storage bucket has RLS policies for admin uploads (e.g. `supabase db push` or run `supabase/migrations/20240219180000_storage_videos_admin.sql` in the SQL Editor).
+
+## Production checklist
+
+- **Environment:** Ensure `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` are set in production; the app logs a console warning if they are missing.
+- **Debug logging:** Agent/debug logging to localhost is gated with `import.meta.env.DEV` and does not run in production builds.
+- **Security:** RLS and admin checks are in place; avoid sending a strict COOP header on the host (see Troubleshooting).
+- **Error handling:** Consider adding a React error boundary around the app for a friendly fallback on uncaught errors.
 
 ## Troubleshooting
 

@@ -69,10 +69,10 @@ const Index = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // #region agent log
-    const log = (msg: string, data: Record<string, unknown>) => { try { fetch('http://127.0.0.1:7244/ingest/a06809ba-2f2d-4027-ad1b-0c709d05e1cc',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Index.tsx:homeFetch',message:msg,data,timestamp:Date.now(),hypothesisId:'H3'})}); } catch (_) {} };
-    log('Promise.all started', {});
-    // #endregion
+    const log = import.meta.env.DEV
+      ? (msg: string, data: Record<string, unknown>) => { try { fetch('http://127.0.0.1:7244/ingest/a06809ba-2f2d-4027-ad1b-0c709d05e1cc',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Index.tsx:homeFetch',message:msg,data,timestamp:Date.now(),hypothesisId:'H3'})}); } catch (_) {} }
+      : () => {};
+    if (import.meta.env.DEV) log('Promise.all started', {});
     const HOME_LOAD_TIMEOUT_MS = 4000;
     const timeoutPromise = new Promise<null>((resolve) => {
       window.setTimeout(() => resolve(null), HOME_LOAD_TIMEOUT_MS);
