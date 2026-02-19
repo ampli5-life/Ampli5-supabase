@@ -88,7 +88,7 @@ export async function confirmSubscriptionBySession(sessionId: string): Promise<{
   });
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {
-    throw new Error((data as { message?: string }).message || `Request failed: ${res.status}`);
+    throw new Error((data as { error?: string }).error || `Request failed: ${res.status}`);
   }
   return data as { success: boolean; plan: string; startDate: string; endDate: string };
 }
@@ -343,7 +343,7 @@ async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> 
         body: JSON.stringify(body),
       });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error((data as { message?: string }).message || "Request failed");
+      if (!res.ok) throw new Error((data as { error?: string }).error || "Request failed");
       return data as T;
     }
 

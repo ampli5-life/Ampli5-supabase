@@ -57,7 +57,7 @@ const Pricing = () => {
     }).catch(() => []);
   }, []);
 
-  const SUBSCRIBE_TIMEOUT_MS = 15000;
+  const SUBSCRIBE_TIMEOUT_MS = 25000;
 
   const handleSubscribe = async (planId: string) => {
     if (planId !== "silver" && planId !== "gold") return;

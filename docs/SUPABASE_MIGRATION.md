@@ -53,7 +53,7 @@ supabase secrets set STRIPE_CANCEL_URL=https://your-frontend.onrender.com/pricin
 
 1. Stripe Dashboard → Developers → Webhooks → Add endpoint
 2. URL: `https://YOUR_PROJECT_REF.supabase.co/functions/v1/stripe-webhook`
-3. Events: `customer.subscription.updated`, `customer.subscription.deleted`
+3. Events: `checkout.session.completed`, `customer.subscription.updated`, `customer.subscription.deleted`
 4. Copy signing secret → set as `STRIPE_WEBHOOK_SECRET`
 
 ### 7. Frontend env vars (Render)

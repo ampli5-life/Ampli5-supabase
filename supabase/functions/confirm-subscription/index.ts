@@ -33,7 +33,7 @@ Deno.serve(async (req) => {
     const sessionId = body?.sessionId?.trim();
     if (!sessionId || !sessionId.startsWith("cs_")) {
       return new Response(
-        JSON.stringify({ message: "sessionId is required (must start with cs_)" }),
+        JSON.stringify({ error: "sessionId is required (must start with cs_)" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -44,7 +44,7 @@ Deno.serve(async (req) => {
 
     if (!clientRef || !subId) {
       return new Response(
-        JSON.stringify({ message: "Invalid checkout session" }),
+        JSON.stringify({ error: "Invalid checkout session" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -107,7 +107,7 @@ Deno.serve(async (req) => {
   } catch (e) {
     console.error(e);
     return new Response(
-      JSON.stringify({ message: e instanceof Error ? e.message : "Confirmation failed" }),
+      JSON.stringify({ error: e instanceof Error ? e.message : "Confirmation failed" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }

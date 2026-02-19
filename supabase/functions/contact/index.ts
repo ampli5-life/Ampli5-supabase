@@ -18,7 +18,7 @@ Deno.serve(async (req) => {
 
   if (req.method !== "POST") {
     return new Response(
-      JSON.stringify({ message: "Method not allowed" }),
+      JSON.stringify({ error: "Method not allowed" }),
       { status: 405, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
@@ -31,7 +31,7 @@ Deno.serve(async (req) => {
 
     if (!name || !email || !message) {
       return new Response(
-        JSON.stringify({ message: "Name, email, and message are required." }),
+        JSON.stringify({ error: "Name, email, and message are required." }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -50,7 +50,7 @@ Deno.serve(async (req) => {
     if (error) {
       console.error(error);
       return new Response(
-        JSON.stringify({ message: "Failed to send message. Please try again later." }),
+        JSON.stringify({ error: "Failed to send message. Please try again later." }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -62,7 +62,7 @@ Deno.serve(async (req) => {
   } catch (e) {
     console.error(e);
     return new Response(
-      JSON.stringify({ message: "Failed to send message. Please try again later." }),
+      JSON.stringify({ error: "Failed to send message. Please try again later." }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }

@@ -211,6 +211,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const onSessionExpired = () => {
+      setToken(null);
       setUser(null);
       setProfile(null);
       setIsSubscribed(false);

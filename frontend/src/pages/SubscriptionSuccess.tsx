@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { confirmSubscription, confirmSubscriptionBySession } from "@/lib/api";
+import { confirmSubscriptionBySession } from "@/lib/api";
 import { Loader2, CheckCircle, XCircle } from "lucide-react";
 
 const SubscriptionSuccess = () => {
@@ -16,20 +16,14 @@ const SubscriptionSuccess = () => {
     const hashParams = new URLSearchParams(hash);
     const fromQuery = (name: string) => searchParams.get(name) || hashParams.get(name);
     const sessionId = fromQuery("session_id");
-    const subscriptionId =
-      sessionId || fromQuery("subscription_id") || fromQuery("token") || fromQuery("ba_token");
-    if (!subscriptionId) {
+    if (!sessionId || !sessionId.startsWith("cs_")) {
       setStatus("error");
       setMessage(
         "Missing checkout session. Did you complete the checkout? Return to the app and try subscribing again."
       );
       return;
     }
-    const useSessionApi = subscriptionId.startsWith("cs_");
-    const confirmFn = useSessionApi
-      ? confirmSubscriptionBySession(subscriptionId)
-      : confirmSubscription(subscriptionId);
-    confirmFn
+    confirmSubscriptionBySession(sessionId)
       .then(() => {
         setStatus("success");
         refreshSubscription();
