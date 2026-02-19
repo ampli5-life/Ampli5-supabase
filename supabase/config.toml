@@ -21,3 +21,6 @@ enabled = true
 
 [auth]
 enabled = true
+
+[edge_runtime]
+deno_version = 2
