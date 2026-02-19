@@ -54,8 +54,12 @@ function planDisplayName(planId: string | null): string {
 export async function createSubscription(
   planId: string
 ): Promise<{ subscriptionId: string; approvalUrl: string }> {
-  const token = await getTokenAsync();
-  if (!token) throw new Error("Authentication required");
+  const { data, error } = await supabase.auth.refreshSession();
+  if (error || !data.session?.access_token) {
+    throw new Error("Session expired. Please log in again.");
+  }
+  const token = data.session.access_token;
+  setToken(token);
   const res = await fetch(`${FUNCTIONS_BASE}/stripe-checkout`, {
     method: "POST",
     headers: {

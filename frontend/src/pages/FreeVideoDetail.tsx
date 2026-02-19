@@ -7,11 +7,18 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ArrowLeft, Lock, Play } from "lucide-react";
 
+const YOUTUBE_REGEX = /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/;
+function extractYoutubeVideoId(url: string | null | undefined): string | null {
+  const m = (url || "").trim().match(YOUTUBE_REGEX);
+  return m ? m[1] : null;
+}
+
 interface Video {
   id: string;
   title: string;
   description?: string;
   thumbnail_url?: string;
+  youtube_url?: string;
   is_paid?: boolean;
   category?: string;
   duration?: number;
@@ -59,9 +66,26 @@ const FreeVideoDetail = () => {
       setEmbedLoading(false);
       return;
     }
+    const ytUrl = video.youtube_url ?? (video as { youtubeUrl?: string }).youtubeUrl;
+    if (!isPaid && ytUrl) {
+      const ytId = extractYoutubeVideoId(ytUrl);
+      if (ytId) {
+        setEmbedUrl(`https://www.youtube.com/embed/${ytId}`);
+        setIsDirectVideo(false);
+        setEmbedForbidden(false);
+        setEmbedLoading(false);
+        return;
+      }
+    }
+    if (!isPaid) {
+      setEmbedUrl(null);
+      setEmbedForbidden(false);
+      setEmbedLoading(false);
+      return;
+    }
     setEmbedLoading(true);
     setEmbedForbidden(false);
-    getVideoEmbedUrl(id, { sendAuth: isPaid })
+    getVideoEmbedUrl(id, { sendAuth: true })
       .then((r) => {
         setEmbedUrl(r.embedUrl);
         setIsDirectVideo(r.isDirectVideo ?? false);
@@ -159,7 +183,11 @@ const FreeVideoDetail = () => {
           ) : (
             <div className="flex h-full min-h-[200px] flex-col items-center justify-center gap-2 rounded-lg border border-dashed bg-muted/30 p-6 text-center text-muted-foreground">
               <p>This video cannot be played here.</p>
-              <p className="text-sm">No video link is available for this content.</p>
+              <p className="text-sm">
+                {!isPaid
+                  ? "This free video needs a valid YouTube URL. Add or fix it in Admin → Videos → Free Videos."
+                  : "No video link is available for this content."}
+              </p>
             </div>
           )}
         </div>
