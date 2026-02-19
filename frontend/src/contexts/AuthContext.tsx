@@ -116,8 +116,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // #region agent log
     const log = (msg: string, data: Record<string, unknown>) => { try { fetch('http://127.0.0.1:7244/ingest/a06809ba-2f2d-4027-ad1b-0c709d05e1cc',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'AuthContext.tsx:getSession',message:msg,data,timestamp:Date.now(),hypothesisId:'H2'})}); } catch (_) {} };
     // #endregion
+    const timeoutId = window.setTimeout(() => {
+      setLoading(false);
+    }, 5000);
     supabase.auth.getSession()
       .then(({ data: { session } }) => {
+        clearTimeout(timeoutId);
         // #region agent log
         log('getSession resolved', { hasSession: !!session, hasUser: !!session?.user });
         // #endregion
@@ -135,11 +139,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setLoading(false);
       })
       .catch((err) => {
+        clearTimeout(timeoutId);
         // #region agent log
         log('getSession rejected', { error: String(err?.message ?? err), name: err?.name });
         // #endregion
         setLoading(false);
       });
+    return () => clearTimeout(timeoutId);
   }, [loadProfile, persistProfile]);
 
   useEffect(() => {
