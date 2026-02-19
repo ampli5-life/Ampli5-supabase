@@ -26,19 +26,6 @@ const SubscriptionSuccess = () => {
       return;
     }
     const useSessionApi = subscriptionId.startsWith("cs_");
-    // #region agent log
-    fetch("http://127.0.0.1:7243/ingest/02b76a8b-476a-44dc-ad16-7553144ed30b", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        location: "SubscriptionSuccess.tsx:useEffect",
-        message: "confirm branch choice",
-        data: { subscriptionIdPrefix: subscriptionId?.slice(0, 25), useSessionApi },
-        timestamp: Date.now(),
-        hypothesisId: "H4",
-      }),
-    }).catch(() => {});
-    // #endregion
     const confirmFn = useSessionApi
       ? confirmSubscriptionBySession(subscriptionId)
       : confirmSubscription(subscriptionId);

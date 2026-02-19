@@ -6,27 +6,15 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { supabase } from "@/lib/supabase";
 import {
   getToken,
   setToken,
-  login as apiLogin,
-  register as apiRegister,
-  loginWithGoogle as apiLoginWithGoogle,
   getSubscriptionStatus,
-  type ApiUser,
   type SubscriptionStatus,
 } from "@/lib/api";
 
 const PROFILE_KEY = "ampli5_profile";
-
-function isTokenExpired(token: string): boolean {
-  try {
-    const payload = JSON.parse(atob(token.split(".")[1]));
-    return !payload.exp || payload.exp * 1000 < Date.now();
-  } catch {
-    return true;
-  }
-}
 
 export interface Profile {
   id: string;
@@ -59,13 +47,13 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
-function profileFromApiUser(apiUser: ApiUser): Profile {
+function profileFromUser(user: { id: string; email?: string }, profileRow?: { full_name?: string; avatar_url?: string | null; is_admin?: boolean } | null): Profile {
   return {
-    id: apiUser.id,
-    email: apiUser.email,
-    full_name: apiUser.fullName,
-    avatar_url: null,
-    is_admin: apiUser.isAdmin ?? false,
+    id: user.id,
+    email: user.email ?? "",
+    full_name: profileRow?.full_name ?? (user as { user_metadata?: { full_name?: string; name?: string } }).user_metadata?.full_name ?? (user as { user_metadata?: { full_name?: string; name?: string } }).user_metadata?.name ?? "User",
+    avatar_url: profileRow?.avatar_url ?? (user as { user_metadata?: { avatar_url?: string } }).user_metadata?.avatar_url ?? null,
+    is_admin: profileRow?.is_admin ?? false,
   };
 }
 
@@ -86,6 +74,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [subscriptionInfo, setSubscriptionInfo] = useState<SubscriptionInfo | null>(null);
 
+  const persistProfile = useCallback((p: Profile | null) => {
+    if (p) localStorage.setItem(PROFILE_KEY, JSON.stringify(p));
+    else localStorage.removeItem(PROFILE_KEY);
+  }, []);
+
   const refreshSubscription = useCallback(async () => {
     const token = getToken();
     if (!token) {
@@ -103,44 +96,57 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const persistProfile = useCallback((p: Profile | null) => {
-    if (p) localStorage.setItem(PROFILE_KEY, JSON.stringify(p));
-    else localStorage.removeItem(PROFILE_KEY);
-  }, []);
+  const loadProfile = useCallback(
+    async (authUser: { id: string; email?: string; user_metadata?: Record<string, unknown> }) => {
+      const { data: profileRow } = await supabase
+        .from("profiles")
+        .select("full_name, avatar_url, is_admin")
+        .eq("id", authUser.id)
+        .maybeSingle();
+      const p = profileFromUser(authUser, profileRow);
+      setUser(p);
+      setProfile(p);
+      persistProfile(p);
+      await refreshSubscription();
+    },
+    [persistProfile, refreshSubscription]
+  );
 
   useEffect(() => {
-    const token = getToken();
-    const saved = localStorage.getItem(PROFILE_KEY);
-    if (token && saved && !isTokenExpired(token)) {
-      try {
-        const data = JSON.parse(saved) as Profile;
-        setUser(data);
-        setProfile(data);
-        getSubscriptionStatus()
-          .then((s) => {
-            setIsSubscribed(s?.isSubscribed ?? false);
-            setSubscriptionInfo(subscriptionInfoFromStatus(s ?? null));
-          })
-          .catch(() => {
-            setIsSubscribed(false);
-            setSubscriptionInfo(null);
-          });
-      } catch {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        setToken(session.access_token);
+        loadProfile(session.user);
+      } else {
         setToken(null);
-        localStorage.removeItem(PROFILE_KEY);
+        setUser(null);
+        setProfile(null);
         setIsSubscribed(false);
         setSubscriptionInfo(null);
+        persistProfile(null);
       }
-    } else {
-      setToken(null);
-      localStorage.removeItem(PROFILE_KEY);
-      setUser(null);
-      setProfile(null);
-      setIsSubscribed(false);
-      setSubscriptionInfo(null);
-    }
-    setLoading(false);
-  }, []);
+      setLoading(false);
+    });
+  }, [loadProfile, persistProfile]);
+
+  useEffect(() => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      if (session?.user) {
+        setToken(session.access_token);
+        await loadProfile(session.user);
+      } else {
+        setToken(null);
+        setUser(null);
+        setProfile(null);
+        setIsSubscribed(false);
+        setSubscriptionInfo(null);
+        persistProfile(null);
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, [loadProfile, persistProfile]);
 
   useEffect(() => {
     const onSessionExpired = () => {
@@ -160,59 +166,63 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       password: string,
       fullName: string
     ): Promise<{ error: { message: string } | null }> => {
-      const result = await apiRegister(email, password, fullName);
-      if ("error" in result) {
-        return { error: { message: result.error } };
+      const { data, error } = await supabase.auth.signUp({
+        email: email.trim().toLowerCase(),
+        password,
+        options: { data: { full_name: fullName.trim() || "User" } },
+      });
+      if (error) {
+        return { error: { message: error.message } };
       }
-      const { token, user: apiUser } = result;
-      setToken(token);
-      const profileData = profileFromApiUser(apiUser);
-      setUser(profileData);
-      setProfile(profileData);
-      persistProfile(profileData);
-      await refreshSubscription();
+      if (data.session) {
+        setToken(data.session.access_token);
+        await loadProfile(data.user);
+      } else if (data.user) {
+        await loadProfile(data.user);
+      }
       return { error: null };
     },
-    [persistProfile, refreshSubscription]
+    [loadProfile]
   );
 
   const signIn = useCallback(
     async (email: string, password: string): Promise<{ error: { message: string } | null }> => {
-      const result = await apiLogin(email, password);
-      if ("error" in result) {
-        return { error: { message: result.error } };
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: email.trim().toLowerCase(),
+        password,
+      });
+      if (error) {
+        return { error: { message: error.message } };
       }
-      const { token, user: apiUser } = result;
-      setToken(token);
-      const profileData = profileFromApiUser(apiUser);
-      setUser(profileData);
-      setProfile(profileData);
-      persistProfile(profileData);
-      await refreshSubscription();
+      if (data.session) {
+        setToken(data.session.access_token);
+        await loadProfile(data.user);
+      }
       return { error: null };
     },
-    [persistProfile, refreshSubscription]
+    [loadProfile]
   );
 
   const signInWithGoogle = useCallback(
     async (idToken: string): Promise<{ error: { message: string } | null }> => {
-      const result = await apiLoginWithGoogle(idToken);
-      if ("error" in result) {
-        return { error: { message: result.error } };
+      const { data, error } = await supabase.auth.signInWithIdToken({
+        provider: "google",
+        token: idToken,
+      });
+      if (error) {
+        return { error: { message: error.message } };
       }
-      const { token, user: apiUser } = result;
-      setToken(token);
-      const profileData = profileFromApiUser(apiUser);
-      setUser(profileData);
-      setProfile(profileData);
-      persistProfile(profileData);
-      await refreshSubscription();
+      if (data.session) {
+        setToken(data.session.access_token);
+        await loadProfile(data.user);
+      }
       return { error: null };
     },
-    [persistProfile, refreshSubscription]
+    [loadProfile]
   );
 
-  const signOut = useCallback(() => {
+  const signOut = useCallback(async () => {
+    await supabase.auth.signOut();
     setToken(null);
     setUser(null);
     setProfile(null);

@@ -28,6 +28,7 @@ const FreeVideoDetail = () => {
   const [related, setRelated] = useState<Video[]>([]);
   const [loading, setLoading] = useState(!stateMatchesId);
   const [embedUrl, setEmbedUrl] = useState<string | null>(null);
+  const [isDirectVideo, setIsDirectVideo] = useState(false);
   const [embedLoading, setEmbedLoading] = useState(false);
   const [embedForbidden, setEmbedForbidden] = useState(false);
 
@@ -63,6 +64,7 @@ const FreeVideoDetail = () => {
     getVideoEmbedUrl(id)
       .then((r) => {
         setEmbedUrl(r.embedUrl);
+        setIsDirectVideo(r.isDirectVideo ?? false);
         setEmbedForbidden(false);
       })
       .catch((err) => {
@@ -107,13 +109,22 @@ const FreeVideoDetail = () => {
           onContextMenu={(e) => e.preventDefault()}
         >
           {embedUrl ? (
-            <iframe
-              src={embedUrl}
-              title={video.title}
-              className="h-full w-full"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-            />
+            isDirectVideo ? (
+              <video
+                src={embedUrl}
+                controls
+                className="h-full w-full"
+                title={video.title}
+              />
+            ) : (
+              <iframe
+                src={embedUrl}
+                title={video.title}
+                className="h-full w-full"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              />
+            )
           ) : embedLoading ? (
             <div className="flex h-full min-h-[200px] flex-col items-center justify-center gap-2 rounded-lg border border-dashed bg-muted/30 p-6">
               <div className="h-10 w-10 animate-spin rounded-full border-2 border-primary border-t-transparent" />

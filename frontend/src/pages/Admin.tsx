@@ -177,7 +177,7 @@ const emptyVideoForm = {
 
 function UsersSection() {
   const { profile } = useAuth();
-  const [items, setItems] = useState<{ id: string; email: string; fullName: string; admin?: boolean; isAdmin?: boolean }[]>([]);
+  const [items, setItems] = useState<{ id: string; email: string; fullName?: string; full_name?: string; admin?: boolean; isAdmin?: boolean }[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [createForm, setCreateForm] = useState({ email: "", password: "", fullName: "", admin: false });
@@ -274,7 +274,7 @@ function UsersSection() {
         {items.map((u) => (
           <Card key={u.id} className="flex items-center justify-between p-4">
             <div>
-              <span className="font-medium">{u.fullName}</span>
+              <span className="font-medium">{u.fullName ?? u.full_name ?? "—"}</span>
               <span className="text-muted-foreground ml-2">({u.email})</span>
               {(u.admin || u.isAdmin) && <span className="ml-2 rounded bg-primary/20 px-2 py-0.5 text-xs font-medium text-primary">Admin</span>}
             </div>

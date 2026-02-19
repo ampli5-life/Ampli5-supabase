@@ -1,50 +1,8 @@
-# Render Blueprint: Ampli5 database, backend, and frontend
-# See docs/RENDER_DEPLOY.md for deployment steps.
-
-databases:
-  - name: ampli5-db
-    databaseName: ampli5
-    plan: free
+# Render Blueprint: Ampli5 frontend (Supabase backend)
+# Supabase project must be created separately. Edge Functions deployed via Supabase CLI.
+# See docs/SUPABASE_MIGRATION.md for setup.
 
 services:
-  # Backend: Spring Boot (Docker)
-  - type: web
-    runtime: docker
-    name: ampli5-backend
-    plan: free
-    rootDir: backend
-    dockerfilePath: ./Dockerfile
-    envVars:
-      - key: DATABASE_URL
-        fromDatabase:
-          name: ampli5-db
-          property: connectionString
-      - key: JWT_SECRET
-        generateValue: true
-      - key: GOOGLE_CLIENT_ID
-        sync: false
-      - key: STRIPE_SECRET_KEY
-        sync: false
-      - key: STRIPE_PRICE_SILVER
-        sync: false
-      - key: STRIPE_PRICE_GOLD
-        sync: false
-      - key: STRIPE_WEBHOOK_SECRET
-        sync: false
-      - key: STRIPE_SUCCESS_URL
-        sync: false
-      - key: STRIPE_CANCEL_URL
-        sync: false
-      - key: CORS_ORIGINS
-        sync: false
-      - key: CONTACT_MAIL_USER
-        sync: false
-      - key: CONTACT_MAIL_PASSWORD
-        sync: false
-      - key: CONTACT_MAIL_RECIPIENT
-        sync: false
-
-  # Frontend: Vite static site (omit plan: free - not supported for static in Blueprint; static sites are free by default)
   - type: web
     runtime: static
     name: ampli5-frontend
@@ -52,9 +10,11 @@ services:
     buildCommand: npm ci && npm run build
     staticPublishPath: ./dist
     envVars:
-      - key: VITE_GOOGLE_CLIENT_ID
+      - key: VITE_SUPABASE_URL
         sync: false
-      - key: VITE_API_URL
+      - key: VITE_SUPABASE_ANON_KEY
+        sync: false
+      - key: VITE_GOOGLE_CLIENT_ID
         sync: false
     routes:
       - type: rewrite

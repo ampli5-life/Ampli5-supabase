@@ -1,40 +1,47 @@
 # Ampli5
 
-Full-stack app with Spring Boot backend, React frontend, and PostgreSQL. Ready to run with Docker and to deploy (e.g. Render, Railway).
+Full-stack app with React frontend and Supabase backend. Deploy frontend to Render; Supabase handles Auth, Database, Storage, and Edge Functions.
 
 **Repository:** https://github.com/ampli5-life/Ampli-life
 
 ## Prerequisites
 
-- Docker and Docker Compose
+- Node.js 18+
+- Supabase account
+- Stripe account (for subscriptions)
 
 ## Run locally
 
-1. Copy environment variables:
+1. Create a Supabase project at [supabase.com](https://supabase.com)
+2. Run migrations: `supabase db push` or apply `supabase/migrations/20240219000000_init_schema.sql` in SQL Editor
+3. Deploy Edge Functions: `supabase functions deploy`
+4. Set Edge Function secrets: Stripe keys, success/cancel URLs
+5. Copy environment variables:
    ```bash
    cp .env.example .env
    ```
-2. Edit `.env` and set any required values (Google OAuth, PayPal, etc.).
-3. Build and start all services:
+6. Edit `.env` and set `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_GOOGLE_CLIENT_ID`
+7. Start frontend:
    ```bash
-   ./start.sh
+   cd frontend && npm install && npm run dev
    ```
-   Or: `docker compose up --build -d`
-4. Open:
-   - **Frontend:** http://localhost
-   - **Backend API:** http://localhost:8081
-   - **Postgres:** localhost:5434 (internal use)
-
-To pick up code changes, run `./start.sh` or `docker compose up --build -d` again.
+8. Open http://localhost:5173
 
 ## Project layout
 
-- **backend/** – Spring Boot API
-- **frontend/** – Vite/React UI
-- **docs/** – [Deployment](docs/DEPLOY.md), [Render Blueprint](docs/RENDER_DEPLOY.md), [Google OAuth](docs/GOOGLE_OAUTH_SETUP.md), [PayPal setup](docs/PAYPAL_SETUP.md)
-- **docker-compose.yml** – Postgres, backend, frontend
+- **frontend/** – Vite/React UI (connects to Supabase)
+- **supabase/**
+  - **migrations/** – SQL schema and RLS policies
+  - **functions/** – Edge Functions (stripe-checkout, stripe-webhook, confirm-subscription, video-signed-url, contact, create-user)
 - **.env.example** – Template for env vars (copy to `.env`)
 
 ## Deploy
 
-See [docs/DEPLOY.md](docs/DEPLOY.md). For **Render** (database + backend + frontend from one Blueprint), see [docs/RENDER_DEPLOY.md](docs/RENDER_DEPLOY.md). For Google sign-in, see [docs/GOOGLE_OAUTH_SETUP.md](docs/GOOGLE_OAUTH_SETUP.md). For PayPal/subscription setup, see [docs/PAYPAL_SETUP.md](docs/PAYPAL_SETUP.md). This repo is set up for deployment: use your platform’s Docker or Docker Compose support (e.g. Render, Railway). Set `DATABASE_URL` (or the individual DB vars) and the same env vars as in `.env.example` in your deployment environment.
+1. **Supabase**: Create project, run migrations, deploy Edge Functions, set secrets
+2. **Render**: Deploy frontend static site. Set `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_GOOGLE_CLIENT_ID` in Render dashboard
+3. Configure Stripe webhook: `https://YOUR_PROJECT.supabase.co/functions/v1/stripe-webhook`
+
+## Security
+
+- `SUPABASE_SERVICE_ROLE_KEY` is used only in Edge Functions (server-side). Never expose it in frontend or `VITE_*` env vars.
+- Frontend uses `VITE_SUPABASE_ANON_KEY` (public, RLS protects data)
