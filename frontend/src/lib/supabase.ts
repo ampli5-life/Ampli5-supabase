@@ -37,3 +37,21 @@ export function getSupabaseUrl(): string {
   return supabaseUrl;
 }
 
+export function getAnonKey(): string {
+  return supabaseAnonKey;
+}
+
+/**
+ * Read access token directly from localStorage — no Supabase client calls,
+ * no network requests, no possibility of hanging.
+ */
+export function getAccessTokenFromStorage(): string | null {
+  try {
+    const raw = localStorage.getItem(`sb-${projectRef}-auth-token`);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    return parsed?.access_token ?? null;
+  } catch {
+    return null;
+  }
+}

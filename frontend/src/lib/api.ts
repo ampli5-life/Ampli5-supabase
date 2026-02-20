@@ -4,16 +4,15 @@
  * service_role key is NEVER used in frontend.
  */
 
-import { supabase, getSupabaseUrl } from "./supabase";
+import { supabase, getSupabaseUrl, getAnonKey, getAccessTokenFromStorage } from "./supabase";
 
 const FUNCTIONS_BASE = `${getSupabaseUrl()}/functions/v1`;
 
 export const TOKEN_KEY = "ampli5_token";
 
-/** Returns current Supabase session access token for Edge Function auth */
+/** Returns current access token — reads directly from localStorage, never hangs */
 export async function getTokenAsync(): Promise<string | null> {
-  const { data } = await supabase.auth.getSession();
-  return data.session?.access_token ?? null;
+  return getAccessTokenFromStorage() ?? getToken();
 }
 
 /** Sync getToken - reads from localStorage (kept in sync by AuthContext) */
@@ -57,14 +56,10 @@ export async function createSubscription(
   // #region agent log
   fetch('http://127.0.0.1:7244/ingest/a06809ba-2f2d-4027-ad1b-0c709d05e1cc', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ location: 'api.ts:createSubscription:entry', message: 'createSubscription started', data: { planId, functionsBase: FUNCTIONS_BASE }, timestamp: Date.now(), hypothesisId: 'H1' }) }).catch(() => { });
   // #endregion
-  const { data, error } = await supabase.auth.getSession();
-  // #region agent log
-  fetch('http://127.0.0.1:7244/ingest/a06809ba-2f2d-4027-ad1b-0c709d05e1cc', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ location: 'api.ts:createSubscription:afterRefresh', message: 'refreshSession completed', data: { hasError: !!error, hasSession: !!data?.session, hasToken: !!data?.session?.access_token }, timestamp: Date.now(), hypothesisId: 'H2' }) }).catch(() => { });
-  // #endregion
-  if (error || !data.session?.access_token) {
+  const token = await getTokenAsync();
+  if (!token) {
     throw new Error("Session expired. Please log in again.");
   }
-  const token = data.session.access_token;
   setToken(token);
   const res = await fetch(`${FUNCTIONS_BASE}/stripe-checkout`, {
     method: "POST",
@@ -128,12 +123,12 @@ export async function getSubscriptionStatus(): Promise<SubscriptionStatus> {
   let userId: string | null = null;
   let accessToken: string | null = null;
 
+  // Use raw token and stored profile to avoid hanging
   try {
-    const { data } = await supabase.auth.getSession();
-    if (data.session?.user?.id) {
-      userId = data.session.user.id;
-      accessToken = data.session.access_token;
-    }
+    const rawTok = getAccessTokenFromStorage();
+    if (rawTok) accessToken = rawTok;
+
+    // We can't decode the JWT without a library, so we fall back to stored profile for userId
   } catch { /* ignore */ }
 
   // Fallback: try stored profile for user ID
@@ -215,15 +210,15 @@ export async function getVideoEmbedUrl(
 
   if (res.status === 403) throw new EmbedForbiddenError();
   if (res.status === 401 && sendAuth) {
-    const { data, error } = await supabase.auth.getSession();
-    if (error || !data.session?.access_token) {
+    const newToken = await getTokenAsync();
+    if (!newToken) {
       setToken(null);
       localStorage.removeItem("ampli5_profile");
       window.dispatchEvent(new CustomEvent("auth:session-expired"));
       throw new Error("Session expired. Please log in again.");
     }
-    setToken(data.session.access_token);
-    res = await fetchVideoEmbedUrl(id, data.session.access_token);
+    setToken(newToken);
+    res = await fetchVideoEmbedUrl(id, newToken);
     if (res.status === 403) throw new EmbedForbiddenError();
     if (res.status === 401) {
       setToken(null);
@@ -326,8 +321,7 @@ async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> 
   if (method === "GET") {
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
     const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-    const { data: sessionData } = await supabase.auth.getSession();
-    const token = sessionData?.session?.access_token || getToken() || supabaseKey;
+    const token = await getTokenAsync() || supabaseKey;
 
     if (table === "profiles" && !key) {
       const res = await fetch(`${supabaseUrl}/rest/v1/profiles?select=*`, {
@@ -397,8 +391,7 @@ async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> 
 
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
     const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-    const { data: sd } = await supabase.auth.getSession();
-    const tok = sd?.session?.access_token || getToken() || supabaseKey;
+    const tok = await getTokenAsync() || supabaseKey;
 
     const res = await fetch(`${supabaseUrl}/rest/v1/${table}`, {
       method: "POST",
@@ -427,8 +420,7 @@ async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> 
 
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
     const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-    const { data: sd } = await supabase.auth.getSession();
-    const tok = sd?.session?.access_token || getToken() || supabaseKey;
+    const tok = await getTokenAsync() || supabaseKey;
 
     const res = await fetch(`${supabaseUrl}/rest/v1/${table}?id=eq.${key}`, {
       method: "PATCH",
@@ -450,8 +442,7 @@ async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> 
 
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
     const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-    const { data: sd } = await supabase.auth.getSession();
-    const tok = sd?.session?.access_token || getToken() || supabaseKey;
+    const tok = await getTokenAsync() || supabaseKey;
 
     const res = await fetch(`${supabaseUrl}/rest/v1/${table}?id=eq.${key}`, {
       method: "DELETE",
