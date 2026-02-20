@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { api } from "@/lib/api";
+import { api, getTokenAsync } from "@/lib/api";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import {
@@ -321,6 +321,7 @@ function VideosSection() {
   const [formMode, setFormMode] = useState<"free" | "paid">("free");
   const [videoFile, setVideoFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
 
   const load = async () => {
     try {
@@ -371,16 +372,54 @@ function VideosSection() {
     payload.thumbnail_url = payload.thumbnail_url ?? "";
     if (videoFile) {
       setUploading(true);
+      setUploadProgress(0);
       const pathPrefix = form?.id ?? crypto.randomUUID();
       const path = `${pathPrefix}/${videoFile.name}`;
-      const { error: uploadError } = await supabase.storage.from("videos").upload(path, videoFile, { upsert: true });
-      if (uploadError) {
+
+      try {
+        const token = await getTokenAsync();
+        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+        const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+        const uploadUrl = `${supabaseUrl}/storage/v1/object/videos/${path}`;
+
+        await new Promise<void>((resolve, reject) => {
+          const xhr = new XMLHttpRequest();
+          xhr.open("POST", uploadUrl);
+          xhr.setRequestHeader("Authorization", `Bearer ${token || supabaseKey}`);
+          xhr.setRequestHeader("apikey", supabaseKey);
+          xhr.setRequestHeader("x-upsert", "true");
+
+          xhr.upload.onprogress = (e) => {
+            if (e.lengthComputable) {
+              setUploadProgress(Math.round((e.loaded / e.total) * 100));
+            }
+          };
+
+          xhr.onload = () => {
+            if (xhr.status >= 200 && xhr.status < 300) {
+              resolve();
+            } else {
+              try {
+                const err = JSON.parse(xhr.responseText);
+                reject(new Error(err.message || xhr.statusText));
+              } catch {
+                reject(new Error(`Upload failed: ${xhr.status} ${xhr.statusText}`));
+              }
+            }
+          };
+          xhr.onerror = () => reject(new Error("Network error during upload"));
+          xhr.send(videoFile);
+        });
+
+        payload.storage_path = path;
+      } catch (uploadError) {
         setUploading(false);
-        toast.error(uploadError.message);
+        setUploadProgress(0);
+        toast.error((uploadError as Error).message);
         return;
       }
-      payload.storage_path = path;
       setUploading(false);
+      setUploadProgress(0);
     } else if (!form?.id && !payload.storage_path) {
       toast.error("Upload a video file for new paid videos.");
       return;
@@ -440,12 +479,14 @@ function VideosSection() {
           )}
           <div className="flex gap-4">
             <Input placeholder="Category" value={String(form.category || "")} onChange={(e) => setForm({ ...form, category: e.target.value })} className="flex-1" />
-            <Input type="number" placeholder="Duration (min)" value={form.duration ?? ""} onChange={(e) => setForm({ ...form, duration: parseInt(e.target.value, 10) || 0 })} className="w-28" />
+            <Input type="number" placeholder="Duration (min)" value={String(form.duration ?? "")} onChange={(e) => setForm({ ...form, duration: parseInt(e.target.value, 10) || 0 })} className="w-28" />
           </div>
           <Input placeholder="Instructor" value={String(form.instructor || "")} onChange={(e) => setForm({ ...form, instructor: e.target.value })} />
           <div className="flex gap-2">
-            <Button onClick={save} disabled={uploading}>{uploading ? "Uploading..." : "Save"}</Button>
-            <Button variant="outline" onClick={() => { setForm(null); setVideoFile(null); }}>Cancel</Button>
+            <Button onClick={save} disabled={uploading}>
+              {uploading ? `Uploading... ${uploadProgress > 0 ? `${uploadProgress}%` : ''}` : "Save"}
+            </Button>
+            <Button variant="outline" onClick={() => { setForm(null); setVideoFile(null); }} disabled={uploading}>Cancel</Button>
           </div>
         </div>
       </Card>
@@ -1230,7 +1271,7 @@ function PageContentSection() {
           <details className="text-sm text-muted-foreground">
             <summary className="cursor-pointer">JSON examples</summary>
             <pre className="mt-2 overflow-x-auto rounded-lg bg-muted p-3 text-xs">
-{`home_hero: {"title":"Welcome","subtitle":"Your path to mindful living."}
+              {`home_hero: {"title":"Welcome","subtitle":"Your path to mindful living."}
 home_benefits: [{"title":"Physical wellness","desc":"Improve flexibility."}]`}
             </pre>
           </details>
