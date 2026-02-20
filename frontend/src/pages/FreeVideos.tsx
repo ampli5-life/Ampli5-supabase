@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Lock, Play, Search } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface Video {
   id: string;
@@ -20,6 +21,7 @@ interface Video {
 }
 
 const FreeVideos = () => {
+  const { isSubscribed } = useAuth();
   const [videos, setVideos] = useState<Video[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -91,46 +93,46 @@ const FreeVideos = () => {
               <div className="h-10 w-10 animate-spin rounded-full border-2 border-primary border-t-transparent" />
             </div>
           ) : (
-          <>
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {filtered.map((video) => (
-              <Link key={video.id} to={`/free-videos/${video.id}`} state={{ video }} className="block">
-                <Card className="group overflow-hidden border-0 shadow-md transition-shadow hover:shadow-lg">
-                  <div className="relative aspect-video overflow-hidden">
-                    <img src={thumb(video)} alt={video.title} className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" loading="lazy" />
-                    <div className="absolute inset-0 flex items-center justify-center bg-foreground/0 transition-colors group-hover:bg-foreground/20">
-                      <Play className="h-12 w-12 text-primary-foreground opacity-0 transition-opacity group-hover:opacity-100" />
-                    </div>
-                    {isPaid(video) && (
-                      <div className="absolute left-3 top-3 flex items-center gap-1.5 rounded bg-foreground/80 px-2 py-1 text-primary-foreground">
-                        <Lock className="h-4 w-4" />
-                        <span className="text-xs font-medium">Locked</span>
+            <>
+              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                {filtered.map((video) => (
+                  <Link key={video.id} to={`/free-videos/${video.id}`} state={{ video }} className="block">
+                    <Card className="group overflow-hidden border-0 shadow-md transition-shadow hover:shadow-lg">
+                      <div className="relative aspect-video overflow-hidden">
+                        <img src={thumb(video)} alt={video.title} className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" loading="lazy" />
+                        <div className="absolute inset-0 flex items-center justify-center bg-foreground/0 transition-colors group-hover:bg-foreground/20">
+                          <Play className="h-12 w-12 text-primary-foreground opacity-0 transition-opacity group-hover:opacity-100" />
+                        </div>
+                        {isPaid(video) && !isSubscribed && (
+                          <div className="absolute left-3 top-3 flex items-center gap-1.5 rounded bg-foreground/80 px-2 py-1 text-primary-foreground">
+                            <Lock className="h-4 w-4" />
+                            <span className="text-xs font-medium">Locked</span>
+                          </div>
+                        )}
+                        <span className="absolute bottom-3 right-3 rounded bg-foreground/70 px-2 py-0.5 text-xs text-primary-foreground">{formatDuration(video.duration)}</span>
                       </div>
-                    )}
-                    <span className="absolute bottom-3 right-3 rounded bg-foreground/70 px-2 py-0.5 text-xs text-primary-foreground">{formatDuration(video.duration)}</span>
-                  </div>
-                  <CardContent className="p-4">
-                    <p className="text-xs text-muted-foreground">{[video.instructor, video.category].filter(Boolean).join(" · ") || "—"}</p>
-                    <h3 className="mt-1 font-serif text-lg font-semibold leading-snug hover:text-primary">
-                      {video.title}
-                    </h3>
-                    {isPaid(video) && (
-                      <Button asChild className="mt-3 w-full" size="sm" onClick={(e) => e.stopPropagation()}>
-                        <Link to="/pricing" onClick={(e) => e.stopPropagation()}>Subscribe</Link>
-                      </Button>
-                    )}
-                  </CardContent>
-                </Card>
-              </Link>
-            ))}
-          </div>
+                      <CardContent className="p-4">
+                        <p className="text-xs text-muted-foreground">{[video.instructor, video.category].filter(Boolean).join(" · ") || "—"}</p>
+                        <h3 className="mt-1 font-serif text-lg font-semibold leading-snug hover:text-primary">
+                          {video.title}
+                        </h3>
+                        {isPaid(video) && !isSubscribed && (
+                          <Button asChild className="mt-3 w-full" size="sm" onClick={(e) => e.stopPropagation()}>
+                            <Link to="/pricing" onClick={(e) => e.stopPropagation()}>Subscribe</Link>
+                          </Button>
+                        )}
+                      </CardContent>
+                    </Card>
+                  </Link>
+                ))}
+              </div>
 
-          {filtered.length === 0 && (
-            <div className="py-16 text-center text-muted-foreground">
-              <p>No videos found matching your filters.</p>
-            </div>
-          )}
-          </>
+              {filtered.length === 0 && (
+                <div className="py-16 text-center text-muted-foreground">
+                  <p>No videos found matching your filters.</p>
+                </div>
+              )}
+            </>
           )}
         </div>
       </section>

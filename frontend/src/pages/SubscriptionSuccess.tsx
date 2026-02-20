@@ -27,8 +27,8 @@ const SubscriptionSuccess = () => {
       .then(() => {
         setStatus("success");
         refreshSubscription();
-        window.history.replaceState({}, "", "/");
-        setTimeout(() => navigate("/", { replace: true }), 1500);
+        window.history.replaceState({}, "", "/free-videos");
+        setTimeout(() => navigate("/free-videos", { replace: true }), 1500);
       })
       .catch((e) => {
         setStatus("error");
