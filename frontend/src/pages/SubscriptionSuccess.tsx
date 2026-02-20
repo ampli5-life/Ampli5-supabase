@@ -24,10 +24,9 @@ const SubscriptionSuccess = () => {
       return;
     }
     confirmSubscriptionBySession(sessionId)
-      .then(() => {
+      .then(async () => {
         setStatus("success");
-        refreshSubscription();
-        window.history.replaceState({}, "", "/free-videos");
+        await refreshSubscription();
         setTimeout(() => navigate("/free-videos", { replace: true }), 1500);
       })
       .catch((e) => {
