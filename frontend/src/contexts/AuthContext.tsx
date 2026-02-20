@@ -115,9 +115,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 
   useEffect(() => {
-    const log = import.meta.env.DEV
-      ? (msg: string, data: Record<string, unknown>) => { try { fetch('http://127.0.0.1:7244/ingest/a06809ba-2f2d-4027-ad1b-0c709d05e1cc',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'AuthContext.tsx:getSession',message:msg,data,timestamp:Date.now(),hypothesisId:'H2'})}); } catch (_) {} }
-      : () => {};
     function restoreFromStorage(): Profile | null {
       try {
         const stored = localStorage.getItem(PROFILE_KEY);
@@ -164,9 +161,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     supabase.auth.getSession()
       .then(({ data: { session } }) => {
         clearTimeout(timeoutId);
-        // #region agent log
-        log('getSession resolved', { hasSession: !!session, hasUser: !!session?.user });
-        // #endregion
         if (session?.user) {
           setToken(session.access_token);
           loadProfile(session.user);
@@ -180,11 +174,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
         setLoading(false);
       })
-      .catch((err) => {
+      .catch(() => {
         clearTimeout(timeoutId);
-        // #region agent log
-        log('getSession rejected', { error: String(err?.message ?? err), name: err?.name });
-        // #endregion
         setLoading(false);
       });
     return () => clearTimeout(timeoutId);
@@ -298,7 +289,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsSubscribed(false);
     setSubscriptionInfo(null);
     persistProfile(null);
-    void supabase.auth.signOut().catch(() => {});
+    void supabase.auth.signOut().catch(() => { });
   }, [persistProfile]);
 
   const updateProfile = useCallback(

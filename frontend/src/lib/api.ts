@@ -115,43 +115,73 @@ export async function confirmSubscription(subscriptionIdOrSessionId: string): Pr
 }
 
 export async function getSubscriptionStatus(): Promise<SubscriptionStatus> {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) {
-    return {
-      isSubscribed: false,
-      plan: "",
-      planDisplayName: "",
-      startDate: "",
-      endDate: "",
-    };
-  }
-  const now = new Date().toISOString();
-  const { data: subs } = await supabase
-    .from("subscriptions")
-    .select("plan_id, start_date, end_date")
-    .eq("user_id", user.id)
-    .eq("status", "ACTIVE")
-    .or(`end_date.is.null,end_date.gte.${now}`)
-    .order("end_date", { ascending: false })
-    .limit(1);
-
-  if (!subs || subs.length === 0) {
-    return {
-      isSubscribed: false,
-      plan: "",
-      planDisplayName: "",
-      startDate: "",
-      endDate: "",
-    };
-  }
-  const s = subs[0];
-  return {
-    isSubscribed: true,
-    plan: s.plan_id ?? "",
-    planDisplayName: planDisplayName(s.plan_id),
-    startDate: s.start_date ? new Date(s.start_date).toISOString() : "",
-    endDate: s.end_date ? new Date(s.end_date).toISOString() : "",
+  const empty: SubscriptionStatus = {
+    isSubscribed: false,
+    plan: "",
+    planDisplayName: "",
+    startDate: "",
+    endDate: "",
   };
+
+  // Use getSession (reads from local storage, never makes network call, never hangs)
+  // instead of getUser (makes API call, can hang)
+  let userId: string | null = null;
+  let accessToken: string | null = null;
+
+  try {
+    const { data } = await supabase.auth.getSession();
+    if (data.session?.user?.id) {
+      userId = data.session.user.id;
+      accessToken = data.session.access_token;
+    }
+  } catch { /* ignore */ }
+
+  // Fallback: try stored profile for user ID
+  if (!userId) {
+    try {
+      const stored = localStorage.getItem("ampli5_profile");
+      if (stored) {
+        const p = JSON.parse(stored);
+        if (p?.id) userId = p.id;
+      }
+    } catch { /* ignore */ }
+  }
+
+  // Use stored token if no session token
+  if (!accessToken) {
+    accessToken = getToken();
+  }
+
+  if (!userId || !accessToken) return empty;
+
+  // Use direct REST API with the user's JWT so RLS policies work
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+  const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+  const now = new Date().toISOString();
+
+  try {
+    const res = await fetch(
+      `${supabaseUrl}/rest/v1/subscriptions?select=plan_id,start_date,end_date&user_id=eq.${userId}&status=eq.ACTIVE&or=(end_date.is.null,end_date.gte.${now})&order=end_date.desc&limit=1`,
+      {
+        headers: {
+          apikey: supabaseKey,
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
+    const subs = await res.json();
+    if (!Array.isArray(subs) || subs.length === 0) return empty;
+    const s = subs[0];
+    return {
+      isSubscribed: true,
+      plan: s.plan_id ?? "",
+      planDisplayName: planDisplayName(s.plan_id),
+      startDate: s.start_date ? new Date(s.start_date).toISOString() : "",
+      endDate: s.end_date ? new Date(s.end_date).toISOString() : "",
+    };
+  } catch {
+    return empty;
+  }
 }
 
 /** Error thrown when embed returns 403 (subscription required) */
