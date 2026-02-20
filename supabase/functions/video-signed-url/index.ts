@@ -108,9 +108,10 @@ Deno.serve(async (req) => {
     }
 
     if (video.storage_path) {
+      // Increased to 24 hours (86400) so videos don't stop loading after a pause
       const { data: signed, error: signError } = await supabase.storage
         .from("videos")
-        .createSignedUrl(video.storage_path, 60);
+        .createSignedUrl(video.storage_path, 86400);
 
       if (signError || !signed?.signedUrl) {
         return new Response(

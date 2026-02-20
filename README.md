@@ -39,7 +39,7 @@ Full-stack app with React frontend and Supabase backend. Deploy frontend to Rend
 
 1. **Supabase**: Create project, run migrations, deploy Edge Functions, set secrets
 2. **Render**: Deploy frontend static site. Set `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_GOOGLE_CLIENT_ID` in Render dashboard
-3. Configure Stripe webhook: `https://YOUR_PROJECT.supabase.co/functions/v1/stripe-webhook`
+3. Configure Stripe: see [docs/STRIPE_SETUP.md](docs/STRIPE_SETUP.md) (products, webhook, Supabase secrets, Render env)
 
 ## Security
 

@@ -85,6 +85,10 @@ const Pricing = () => {
       }
       setError("Unable to start subscription. Please try again.");
     } catch (e) {
+      const errMsg = e instanceof Error ? e.message : String(e);
+      // #region agent log
+      fetch('http://127.0.0.1:7244/ingest/a06809ba-2f2d-4027-ad1b-0c709d05e1cc',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Pricing.tsx:handleSubscribe:catch',message:'Subscribe error',data:{error:errMsg,isTimeout:errMsg.includes('too long')},timestamp:Date.now(),hypothesisId:'H4'})}).catch(()=>{});
+      // #endregion
       setError(e instanceof Error ? e.message : "Subscription failed. Please try again.");
     } finally {
       setLoadingPlanId(null);

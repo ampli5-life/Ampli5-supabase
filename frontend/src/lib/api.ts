@@ -54,7 +54,13 @@ function planDisplayName(planId: string | null): string {
 export async function createSubscription(
   planId: string
 ): Promise<{ subscriptionId: string; approvalUrl: string }> {
-  const { data, error } = await supabase.auth.refreshSession();
+  // #region agent log
+  fetch('http://127.0.0.1:7244/ingest/a06809ba-2f2d-4027-ad1b-0c709d05e1cc', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ location: 'api.ts:createSubscription:entry', message: 'createSubscription started', data: { planId, functionsBase: FUNCTIONS_BASE }, timestamp: Date.now(), hypothesisId: 'H1' }) }).catch(() => { });
+  // #endregion
+  const { data, error } = await supabase.auth.getSession();
+  // #region agent log
+  fetch('http://127.0.0.1:7244/ingest/a06809ba-2f2d-4027-ad1b-0c709d05e1cc', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ location: 'api.ts:createSubscription:afterRefresh', message: 'refreshSession completed', data: { hasError: !!error, hasSession: !!data?.session, hasToken: !!data?.session?.access_token }, timestamp: Date.now(), hypothesisId: 'H2' }) }).catch(() => { });
+  // #endregion
   if (error || !data.session?.access_token) {
     throw new Error("Session expired. Please log in again.");
   }
@@ -69,6 +75,9 @@ export async function createSubscription(
     body: JSON.stringify({ planId }),
   });
   const resData = await res.json().catch(() => ({}));
+  // #region agent log
+  fetch('http://127.0.0.1:7244/ingest/a06809ba-2f2d-4027-ad1b-0c709d05e1cc', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ location: 'api.ts:createSubscription:afterFetch', message: 'stripe-checkout response', data: { status: res.status, ok: res.ok, hasApprovalUrl: !!(resData as { approvalUrl?: string }).approvalUrl, error: (resData as { error?: string }).error }, timestamp: Date.now(), hypothesisId: 'H3' }) }).catch(() => { });
+  // #endregion
   if (!res.ok) {
     throw new Error((resData as { error?: string }).error || `Request failed: ${res.status}`);
   }
@@ -176,7 +185,7 @@ export async function getVideoEmbedUrl(
 
   if (res.status === 403) throw new EmbedForbiddenError();
   if (res.status === 401 && sendAuth) {
-    const { data, error } = await supabase.auth.refreshSession();
+    const { data, error } = await supabase.auth.getSession();
     if (error || !data.session?.access_token) {
       setToken(null);
       localStorage.removeItem("ampli5_profile");
@@ -278,7 +287,7 @@ async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> 
       .maybeSingle();
     if (error) {
       if (import.meta.env.DEV) {
-        try { fetch('http://127.0.0.1:7244/ingest/a06809ba-2f2d-4027-ad1b-0c709d05e1cc',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'api.ts:page_content_key',message:'Supabase page_content error',data:{key,errorMessage:error.message},timestamp:Date.now(),hypothesisId:'H5'})}); } catch (_) {}
+        try { fetch('http://127.0.0.1:7244/ingest/a06809ba-2f2d-4027-ad1b-0c709d05e1cc', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ location: 'api.ts:page_content_key', message: 'Supabase page_content error', data: { key, errorMessage: error.message }, timestamp: Date.now(), hypothesisId: 'H5' }) }); } catch (_) { }
       }
       throw new Error(error.message);
     }
@@ -302,7 +311,7 @@ async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> 
     const { data, error } = await supabase.from(table).select("*").order(sortCol, { ascending: true });
     if (error) {
       if (import.meta.env.DEV) {
-        try { fetch('http://127.0.0.1:7244/ingest/a06809ba-2f2d-4027-ad1b-0c709d05e1cc',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'api.ts:GET',message:'Supabase GET error',data:{table,path,errorMessage:error.message},timestamp:Date.now(),hypothesisId:'H5'})}); } catch (_) {}
+        try { fetch('http://127.0.0.1:7244/ingest/a06809ba-2f2d-4027-ad1b-0c709d05e1cc', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ location: 'api.ts:GET', message: 'Supabase GET error', data: { table, path, errorMessage: error.message }, timestamp: Date.now(), hypothesisId: 'H5' }) }); } catch (_) { }
       }
       throw new Error(error.message);
     }

@@ -34,7 +34,9 @@ supabase functions deploy contact
 supabase functions deploy create-user
 ```
 
-### 5. Set Edge Function secrets
+### 5. Set Edge Function secrets (Stripe)
+
+For a full Stripe configuration guide (Dashboard products, prices, webhook, secrets), see [STRIPE_SETUP.md](STRIPE_SETUP.md).
 
 ```bash
 supabase secrets set STRIPE_SECRET_KEY=sk_...
@@ -98,10 +100,32 @@ After deploying, validate these flows:
 
 ### Subscribe shows "Checkout is taking too long" with no stripe-checkout logs in Supabase
 
-The request from the browser never reaches the Edge Function. Causes:
+The request from the browser never reaches the Edge Function. Follow these steps:
 
-1. **Missing or wrong `VITE_SUPABASE_URL` at Render build time** – The built bundle calls an empty or incorrect URL. Add `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` in Render Environment, then trigger a new deploy.
-2. **Request blocked** – In DevTools → Network, check if a request to `https://YOUR_PROJECT.supabase.co/functions/v1/stripe-checkout` appears when you click Subscribe. If no request appears, the frontend URL is wrong. If it appears but stays pending/failed, check CORS or network.
+**Step 1: Diagnose in the browser**
+
+1. Open your Render site (e.g. `https://ampli5-frontend-c0iq.onrender.com/pricing`)
+2. Open DevTools → **Network** tab
+3. Click **Subscribe** and wait for the timeout
+4. Look for a request to `stripe-checkout` or any request to `supabase.co`
+
+- **No request to Supabase** → The fetch URL is wrong (likely empty). Env vars were missing at Render build time. Go to Step 2.
+- **Request exists but pending/failed** → URL is correct but CORS or network is blocking. Check the request status and CORS headers.
+
+**Step 2: Fix Render environment variables**
+
+1. Render Dashboard → your frontend service → **Environment**
+2. Add (or correct): `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` (Supabase project URL and anon key from Settings → API)
+3. Trigger **Clear build cache & Deploy** so the new build bakes these values in. Changing env vars alone does not update an already-built bundle.
+
+**Step 3: Verify Supabase Edge Function secrets**
+
+Ensure `STRIPE_SUCCESS_URL` and `STRIPE_CANCEL_URL` in Supabase point at your Render frontend:
+
+```bash
+supabase secrets set STRIPE_SUCCESS_URL=https://YOUR-RENDER-URL.onrender.com/subscription-success
+supabase secrets set STRIPE_CANCEL_URL=https://YOUR-RENDER-URL.onrender.com/pricing
+```
 
 ### Login/sign up fails with "Cross-Origin-Opener-Policy would block the window.postMessage call"
 
