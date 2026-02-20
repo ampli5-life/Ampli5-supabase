@@ -71,7 +71,7 @@ Run all migrations so the `videos` storage bucket has RLS policies for admin upl
 ## Production checklist
 
 - **Stripe redirect URLs:** Set `STRIPE_SUCCESS_URL` and `STRIPE_CANCEL_URL` in Supabase Edge Function secrets to your production frontend URL (e.g. `https://ampli5-frontend-xxx.onrender.com/subscription-success` and `.../pricing`). Without these, Stripe may redirect to localhost after checkout.
-- **Environment:** Ensure `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` are set in production; the app logs a console warning if they are missing.
+- **Render env (build-time):** Ensure `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` are set in Render before the build. These are baked into the bundle at build time. If missing or wrong, the frontend will call an empty or incorrect Supabase URL and Subscribe will timeout with no Edge Function logs. Trigger a **new deploy** (Clear build cache & Deploy) after adding or fixing env vars.
 - **Debug logging:** Agent/debug logging to localhost is gated with `import.meta.env.DEV` and does not run in production builds.
 - **Security:** RLS and admin checks are in place; avoid sending a strict COOP header on the host (see Troubleshooting).
 - **Error handling:** Consider adding a React error boundary around the app for a friendly fallback on uncaught errors.
@@ -95,6 +95,13 @@ After deploying, validate these flows:
    - Subscribed: paid video returns signed URL and plays.
 
 ## Troubleshooting
+
+### Subscribe shows "Checkout is taking too long" with no stripe-checkout logs in Supabase
+
+The request from the browser never reaches the Edge Function. Causes:
+
+1. **Missing or wrong `VITE_SUPABASE_URL` at Render build time** – The built bundle calls an empty or incorrect URL. Add `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` in Render Environment, then trigger a new deploy.
+2. **Request blocked** – In DevTools → Network, check if a request to `https://YOUR_PROJECT.supabase.co/functions/v1/stripe-checkout` appears when you click Subscribe. If no request appears, the frontend URL is wrong. If it appears but stays pending/failed, check CORS or network.
 
 ### Login/sign up fails with "Cross-Origin-Opener-Policy would block the window.postMessage call"
 

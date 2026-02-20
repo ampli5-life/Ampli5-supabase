@@ -99,6 +99,7 @@ Deno.serve(async (req) => {
       JSON.stringify({
         subscriptionId: sessionData.id,
         approvalUrl: sessionData.url,
+        url: sessionData.url,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
