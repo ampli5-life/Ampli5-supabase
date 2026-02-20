@@ -48,9 +48,48 @@ const FreeVideos = () => {
     return true;
   });
 
-  const formatDuration = (d?: number) => (d != null ? `${d} min` : "—");
-  const thumb = (v: Video) => v.thumbnailUrl || v.thumbnail_url || "";
+  const formatDuration = (d?: number) => (d != null && d > 0 ? `${d} min` : "");
   const isPaid = (v: Video) => v.is_paid === true || (v as { isPaid?: boolean }).isPaid === true;
+
+  /** Extract YouTube video ID from various URL formats */
+  function extractYouTubeId(url?: string): string | null {
+    if (!url) return null;
+    const patterns = [
+      /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/,
+      /^([a-zA-Z0-9_-]{11})$/,
+    ];
+    for (const p of patterns) {
+      const m = url.match(p);
+      if (m) return m[1];
+    }
+    return null;
+  }
+
+  /** Get thumbnail: provided > YouTube auto > gradient placeholder */
+  function getThumb(v: Video): { url: string | null; isPlaceholder: boolean } {
+    const provided = v.thumbnailUrl || v.thumbnail_url;
+    if (provided) return { url: provided, isPlaceholder: false };
+    const ytId = extractYouTubeId(v.youtube_url);
+    if (ytId) return { url: `https://img.youtube.com/vi/${ytId}/hqdefault.jpg`, isPlaceholder: false };
+    return { url: null, isPlaceholder: true };
+  }
+
+  /** Gradient colors based on video title (deterministic) */
+  function placeholderGradient(title: string): string {
+    const gradients = [
+      "from-violet-500 to-purple-600",
+      "from-blue-500 to-cyan-500",
+      "from-emerald-500 to-teal-600",
+      "from-orange-400 to-rose-500",
+      "from-pink-500 to-fuchsia-600",
+      "from-indigo-500 to-blue-600",
+      "from-amber-400 to-orange-500",
+      "from-teal-400 to-emerald-500",
+    ];
+    let hash = 0;
+    for (let i = 0; i < title.length; i++) hash = title.charCodeAt(i) + ((hash << 5) - hash);
+    return gradients[Math.abs(hash) % gradients.length];
+  }
 
   return (
     <>
@@ -99,7 +138,20 @@ const FreeVideos = () => {
                   <Link key={video.id} to={`/free-videos/${video.id}`} state={{ video }} className="block">
                     <Card className="group overflow-hidden border-0 shadow-md transition-shadow hover:shadow-lg">
                       <div className="relative aspect-video overflow-hidden">
-                        <img src={thumb(video)} alt={video.title} className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" loading="lazy" />
+                        {(() => {
+                          const t = getThumb(video);
+                          if (!t.isPlaceholder && t.url) {
+                            return (
+                              <img src={t.url} alt={video.title} className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" loading="lazy" />
+                            );
+                          }
+                          return (
+                            <div className={`h-full w-full bg-gradient-to-br ${placeholderGradient(video.title)} flex flex-col items-center justify-center transition-transform duration-300 group-hover:scale-105`}>
+                              <Play className="h-14 w-14 text-white/80 mb-2" />
+                              <span className="text-white/90 text-sm font-medium px-4 text-center line-clamp-2">{video.title}</span>
+                            </div>
+                          );
+                        })()}
                         <div className="absolute inset-0 flex items-center justify-center bg-foreground/0 transition-colors group-hover:bg-foreground/20">
                           <Play className="h-12 w-12 text-primary-foreground opacity-0 transition-opacity group-hover:opacity-100" />
                         </div>
@@ -109,7 +161,9 @@ const FreeVideos = () => {
                             <span className="text-xs font-medium">Locked</span>
                           </div>
                         )}
-                        <span className="absolute bottom-3 right-3 rounded bg-foreground/70 px-2 py-0.5 text-xs text-primary-foreground">{formatDuration(video.duration)}</span>
+                        {formatDuration(video.duration) && (
+                          <span className="absolute bottom-3 right-3 rounded bg-foreground/70 px-2 py-0.5 text-xs text-primary-foreground">{formatDuration(video.duration)}</span>
+                        )}
                       </div>
                       <CardContent className="p-4">
                         <p className="text-xs text-muted-foreground">{[video.instructor, video.category].filter(Boolean).join(" · ") || "—"}</p>
