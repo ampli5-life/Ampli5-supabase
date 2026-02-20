@@ -1,54 +1,70 @@
 import { Link } from "react-router-dom";
-import { Heart } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 const Footer = () => (
-  <footer className="border-t bg-primary text-primary-foreground">
-    <div className="container py-12">
-      <div className="grid gap-8 md:grid-cols-4">
-        <div>
-          <Link to="/" className="inline-flex items-center gap-2">
-            <img src="/logo.png" alt="Ampli5" className="h-9 object-contain" />
-            <span className="text-sm font-medium opacity-90">.Life</span>
+  <footer className="bg-[#0B1E14] text-white pt-20 pb-10">
+    <div className="container max-w-7xl mx-auto px-4">
+      <div className="grid gap-12 md:grid-cols-4 lg:grid-cols-5 mb-16">
+        <div className="lg:col-span-2">
+          <Link to="/" className="inline-flex items-center gap-2 mb-6 group">
+            <span className="font-serif text-3xl font-bold tracking-tight text-white group-hover:text-white/90 transition-colors">
+              Ampli5
+            </span>
+            <span className="text-secondary text-3xl leading-none -ml-1">.</span>
           </Link>
-          <p className="mt-3 text-sm opacity-80">
-            Amplify your life through the transformative power of yoga. Practice anytime, anywhere.
+          <p className="text-white/60 text-sm leading-relaxed max-w-sm">
+            Empowering you to live a healthier, more mindful life through accessible yoga and wellness practices.
           </p>
         </div>
 
         <div>
-          <h4 className="mb-3 font-sans text-sm font-semibold uppercase tracking-wider opacity-80">Explore</h4>
-          <ul className="space-y-2 text-sm">
-            <li><Link to="/free-videos" className="opacity-80 hover:opacity-100">Videos</Link></li>
-            <li><Link to="/blog" className="opacity-80 hover:opacity-100">Blog</Link></li>
-            <li><Link to="/books" className="opacity-80 hover:opacity-100">Books</Link></li>
-            <li><Link to="/pricing" className="opacity-80 hover:opacity-100">Pricing</Link></li>
-            <li><Link to="/about" className="opacity-80 hover:opacity-100">About Us</Link></li>
+          <h4 className="mb-6 font-sans text-sm font-semibold text-white">Platform</h4>
+          <ul className="space-y-4 text-sm">
+            <li><Link to="/free-videos" className="text-white/60 hover:text-secondary transition-colors">Browse Classes</Link></li>
+            <li><Link to="#" className="text-white/60 hover:text-secondary transition-colors">Live Schedule</Link></li>
+            <li><Link to="#" className="text-white/60 hover:text-secondary transition-colors">Instructors</Link></li>
+            <li><Link to="/pricing" className="text-white/60 hover:text-secondary transition-colors">Pricing</Link></li>
+            <li><Link to="#" className="text-white/60 hover:text-secondary transition-colors">Gift Cards</Link></li>
           </ul>
         </div>
 
         <div>
-          <h4 className="mb-3 font-sans text-sm font-semibold uppercase tracking-wider opacity-80">Support</h4>
-          <ul className="space-y-2 text-sm">
-            <li><Link to="/contact" className="opacity-80 hover:opacity-100">Contact</Link></li>
-            <li><Link to="/terms" className="opacity-80 hover:opacity-100">Terms of Service</Link></li>
-            <li><Link to="/privacy" className="opacity-80 hover:opacity-100">Privacy Policy</Link></li>
-            <li><Link to="/refund-policy" className="opacity-80 hover:opacity-100">Refund Policy</Link></li>
+          <h4 className="mb-6 font-sans text-sm font-semibold text-white">Company</h4>
+          <ul className="space-y-4 text-sm">
+            <li><Link to="/about" className="text-white/60 hover:text-secondary transition-colors">About Us</Link></li>
+            <li><Link to="#" className="text-white/60 hover:text-secondary transition-colors">Careers</Link></li>
+            <li><Link to="/blog" className="text-white/60 hover:text-secondary transition-colors">Blog</Link></li>
+            <li><Link to="#" className="text-white/60 hover:text-secondary transition-colors">Press</Link></li>
+            <li><Link to="/contact" className="text-white/60 hover:text-secondary transition-colors">Contact</Link></li>
           </ul>
         </div>
 
-        <div>
-          <h4 className="mb-3 font-sans text-sm font-semibold uppercase tracking-wider opacity-80">Connect</h4>
-          <p className="text-sm opacity-80">hello@ampli5.life</p>
-          <div className="mt-3 flex gap-3">
-            <a href="#" className="opacity-80 hover:opacity-100" aria-label="Instagram">📷</a>
-            <a href="#" className="opacity-80 hover:opacity-100" aria-label="YouTube">▶️</a>
-            <a href="#" className="opacity-80 hover:opacity-100" aria-label="Facebook">📘</a>
+        <div className="lg:col-span-1">
+          <h4 className="mb-6 font-sans text-sm font-semibold text-white">Newsletter</h4>
+          <p className="text-white/60 text-sm mb-4 leading-relaxed">
+            Subscribe for weekly wellness tips and updates.
+          </p>
+          <div className="flex flex-col gap-3">
+            <Input
+              type="email"
+              placeholder="Email address"
+              className="bg-white/5 border-white/10 text-white placeholder:text-white/40 focus:border-secondary/50 focus:ring-secondary/50 rounded-lg h-12"
+            />
+            <Button className="w-full bg-secondary text-primary hover:bg-secondary/90 font-bold rounded-lg h-12 transition-transform active:scale-95">
+              Subscribe
+            </Button>
           </div>
         </div>
       </div>
 
-      <div className="mt-8 border-t border-primary-foreground/20 pt-6 text-center text-sm opacity-60">
-        <p>© {new Date().getFullYear()} Ampli5.Life — Made with <Heart className="inline h-3 w-3" /> for yogis everywhere</p>
+      <div className="flex flex-col md:flex-row items-center justify-between border-t border-white/10 pt-8 text-sm text-white/40">
+        <p>© {new Date().getFullYear()} Ampli5. All rights reserved.</p>
+        <div className="flex items-center gap-6 mt-4 md:mt-0">
+          <Link to="/terms" className="hover:text-white transition-colors">Terms of Service</Link>
+          <Link to="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link>
+          <Link to="#" className="hover:text-white transition-colors">Accessibility</Link>
+        </div>
       </div>
     </div>
   </footer>

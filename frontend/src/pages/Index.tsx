@@ -4,19 +4,15 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { api } from "@/lib/api";
-import { Play, Star, Users, BookOpen, ArrowRight } from "lucide-react";
-import { motion } from "framer-motion";
-import { WaveDivider, GradientStrip } from "@/components/WaveDivider";
-import { TrustBanner } from "@/components/TrustBanner";
-import { HowItWorks } from "@/components/HowItWorks";
-import { PromoBanner } from "@/components/PromoBanner";
+import { Play, Star, Heart, ArrowRight, CheckCircle2 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
   visible: (i: number) => ({
     opacity: 1,
     y: 0,
-    transition: { delay: i * 0.1, duration: 0.5 },
+    transition: { delay: i * 0.1, duration: 0.6, ease: "easeOut" },
   }),
 };
 
@@ -45,321 +41,284 @@ interface Testimonial {
   author?: string;
 }
 
-interface Book {
-  title: string;
-  author: string;
-  description: string;
-  url?: string;
-}
-
-async function fetchPageContent(key: string): Promise<string | null> {
-  try {
-    const data = await api.get<{ contentJson?: string }>(`/page-content/key/${key}`);
-    return data?.contentJson ?? null;
-  } catch {
-    return null;
-  }
-}
-
 const Index = () => {
-  const [hero, setHero] = useState<{ title?: string; subtitle?: string } | null>(null);
   const [featuredVideos, setFeaturedVideos] = useState<Video[]>([]);
   const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [loading, setLoading] = useState(true);
+  const [activeFilter, setActiveFilter] = useState("All");
 
   useEffect(() => {
-    const log = import.meta.env.DEV
-      ? (msg: string, data: Record<string, unknown>) => { try { fetch('http://127.0.0.1:7244/ingest/a06809ba-2f2d-4027-ad1b-0c709d05e1cc',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Index.tsx:homeFetch',message:msg,data,timestamp:Date.now(),hypothesisId:'H3'})}); } catch (_) {} }
-      : () => {};
-    if (import.meta.env.DEV) log('Promise.all started', {});
-    const HOME_LOAD_TIMEOUT_MS = 4000;
-    const timeoutPromise = new Promise<null>((resolve) => {
-      window.setTimeout(() => resolve(null), HOME_LOAD_TIMEOUT_MS);
-    });
     const dataPromise = Promise.all([
-      fetchPageContent("home_hero").then((json) => {
-        try {
-          return json ? (JSON.parse(json) as { title?: string; subtitle?: string }) : null;
-        } catch {
-          return null;
-        }
-      }),
-      api.get<Video[]>("/videos").catch((e) => { log('videos failed', { err: String((e as Error)?.message) }); return []; }),
-      api.get<BlogPost[]>("/blog").catch((e) => { log('blog failed', { err: String((e as Error)?.message) }); return []; }),
-      api.get<Testimonial[]>("/testimonials").catch((e) => { log('testimonials failed', { err: String((e as Error)?.message) }); return []; }),
+      api.get<Video[]>("/videos").catch(() => []),
+      api.get<BlogPost[]>("/blog").catch(() => []),
+      api.get<Testimonial[]>("/testimonials").catch(() => []),
     ]);
-    Promise.race([dataPromise, timeoutPromise]).then((result) => {
-      if (result !== null) {
-        const [h, videos, blog, test] = result;
-        setHero(h ?? null);
-        setFeaturedVideos(Array.isArray(videos) ? videos.filter((v) => !v.is_paid).slice(0, 6) : []);
-        setBlogPosts(Array.isArray(blog) ? blog.slice(0, 3) : []);
-        setTestimonials(Array.isArray(test) ? test : []);
-      }
-    }).catch((e) => {
-      log('Promise.all rejected', { err: String((e as Error)?.message) });
+    dataPromise.then((result) => {
+      const [videos, blog, test] = result;
+      setFeaturedVideos(Array.isArray(videos) ? videos.filter((v) => !v.is_paid).slice(0, 3) : []);
+      setBlogPosts(Array.isArray(blog) ? blog.slice(0, 3) : []);
+      setTestimonials(Array.isArray(test) ? test : []);
     }).finally(() => {
-      log('Promise.all finally', { setLoadingFalse: true });
       setLoading(false);
     });
   }, []);
 
-  const heroTitle = hero?.title || "Amplify Your Life Through Yoga";
-  const heroSubtitle = hero?.subtitle || "Expert-led classes for every level. Flow, stretch, meditate — anytime, anywhere.";
-
-  const fallbackBlogPosts: BlogPost[] = [
-    {
-      id: "morning-stretches",
-      title: "5 Morning Stretches for a Softer Start",
-      excerpt: "A short sequence you can do next to your bed to gently wake up joints and muscles.",
-      tag: "Beginners",
-    },
-    {
-      id: "breathing-matters",
-      title: "Why Breathing Matters More Than the Pose",
-      excerpt: "Learn how simple breath awareness can change the way every practice feels.",
-      tag: "Mindfulness",
-    },
-    {
-      id: "home-practice",
-      title: "Building a Home Practice That Sticks",
-      excerpt: "Practical tips to weave yoga into real life—not the perfect schedule.",
-      tag: "Lifestyle",
-    },
+  const fallbackVideos: Video[] = [
+    { id: "1", title: "Morning Sunshine Flow", difficulty: "BEGINNER", duration: "25:00", instructor: "Sarah Jenkins", thumbnailUrl: "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?q=80&w=1440" },
+    { id: "2", title: "Core Strength Builder", difficulty: "ADVANCED", duration: "45:00", instructor: "David Chen", thumbnailUrl: "https://images.unsplash.com/photo-1518611012118-696072aa579a?q=80&w=1440" },
+    { id: "3", title: "Evening Wind Down", difficulty: "ALL LEVELS", duration: "15:00", instructor: "Maya Ross", thumbnailUrl: "https://images.unsplash.com/photo-1552286450-4a669f880062?q=80&w=1440" }
   ];
 
-  const fallbackTestimonials: Testimonial[] = [
-    {
-      id: "t1",
-      text: "Ampli5 made it so easy to practice again. Ten minutes in the morning is now my favorite ritual.",
-      author: "Rohit A.",
-    },
-    {
-      id: "t2",
-      text: "I love that I can choose exactly what I need—slow and grounding, or strong and sweaty.",
-      author: "Meera S.",
-    },
-    {
-      id: "t3",
-      text: "The teachers feel genuinely present and encouraging, even through the screen.",
-      author: "Daniel K.",
-    },
+  const effectiveVideos = featuredVideos.length > 0 ? featuredVideos : fallbackVideos;
+
+  const fallbackTestimonials = [
+    { id: "t1", text: "Ampli5 has completely transformed my morning routine. The instructors are incredibly knowledgeable and the variety of classes keeps me engaged every single day.", author: "Jessica M.", memberSince: "2022" },
+    { id: "t2", text: "As a beginner, I was intimidated by yoga studios. This platform allowed me to learn at my own pace in the comfort of my home. The 'Basics' series is a game changer.", author: "Michael T.", memberSince: "2023" },
+    { id: "t3", text: "The value for money is incredible. I used to pay $150/month for a studio membership. Now I get better variety and flexibility for a fraction of the cost.", author: "Sarah L.", memberSince: "2021" }
+  ];
+  const effectiveTestimonials = testimonials.length >= 3 ? testimonials.slice(0, 3) : fallbackTestimonials;
+  
+  const fallbackBlogPosts = [
+    { id: "b1", title: "5 Minutes of Meditation a Day", excerpt: "You don't need an hour of silence. Discover how micro-meditations can reset your nervous system.", tag: "MINDFULNESS", publishedAt: "Oct 12, 2023", thumbnailUrl: "https://images.unsplash.com/photo-1588286840104-b44d137baefb?q=80&w=800" },
+    { id: "b2", title: "Post-Yoga Fueling Guide", excerpt: "What to eat after your practice to maximize recovery and sustain energy levels throughout the day.", tag: "NUTRITION", publishedAt: "Oct 08, 2023", thumbnailUrl: "https://images.unsplash.com/photo-1540420773420-3366772f4999?q=80&w=800" },
+    { id: "b3", title: "Creating a Home Sanctuary", excerpt: "Tips for carving out a peaceful corner in your home dedicated to your wellness practice.", tag: "LIFESTYLE", publishedAt: "Sep 28, 2023", thumbnailUrl: "https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?q=80&w=800" }
   ];
 
-  const books: Book[] = [
-    {
-      title: "Light on Yoga",
-      author: "B.K.S. Iyengar",
-      description: "A classic reference with detailed posture breakdowns and sequencing guidance for serious students.",
-      url: "https://www.amazon.in/dp/0008100468",
-    },
-    {
-      title: "The Heart of Yoga",
-      author: "T.K.V. Desikachar",
-      description: "A practical, compassionate introduction to adapting yoga to your own body and life.",
-      url: "https://www.amazon.in/dp/089281764X",
-    },
-    {
-      title: "Yoga for Everyone",
-      author: "Dianne Bondy",
-      description: "Inclusive, body-positive practices with clear variations so every practitioner feels welcome.",
-      url: "https://www.amazon.in/dp/1465480773",
-    },
-    {
-      title: "The Miracle of Mindfulness",
-      author: "Thich Nhat Hanh",
-      description: "Short, beautiful teachings on bringing gentle awareness into everyday moments.",
-      url: "https://www.amazon.in/dp/1846041066",
-    },
-  ];
-
-  const effectiveBlogPosts = (blogPosts && blogPosts.length > 0 ? blogPosts : fallbackBlogPosts).slice(0, 3);
-  const effectiveTestimonials = (testimonials && testimonials.length > 0 ? testimonials : fallbackTestimonials).slice(0, 3);
+  const categories = ["All", "Vinyasa", "Hatha", "Meditation", "Restorative"];
 
   if (loading) {
     return (
-      <div className="container flex min-h-[40vh] items-center justify-center py-24">
-        <div className="h-10 w-10 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent" />
       </div>
     );
   }
 
   return (
-    <>
-      {/* Hero */}
-      <section className="relative overflow-hidden bg-primary py-24 text-primary-foreground md:py-32">
-        {/* Hero background image */}
-        <div
-          className="absolute inset-0 bg-cover bg-center opacity-20"
-          style={{
-            backgroundImage: "url(https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=1920&h=1080&fit=crop)",
-          }}
-        />
-        {/* Shimmer overlay */}
-        <div className="hero-shimmer absolute inset-0">
-          <div className="absolute inset-0 bg-gradient-to-br from-transparent via-white/10 to-transparent" />
+    <div className="min-h-screen font-sans bg-background text-foreground overflow-hidden">
+      {/* Hero Section */}
+      <section className="relative min-h-[90vh] flex flex-col items-center justify-center pt-20 pb-16 px-4">
+        <div className="absolute inset-0 z-0">
+          <img 
+            src="https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=1920&q=80" 
+            alt="Yoga on the beach" 
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-primary/40 mix-blend-multiply" />
+          <div className="absolute inset-0 bg-gradient-to-b from-primary/60 via-transparent to-background/90" />
         </div>
-        {/* Subtle geometric pattern */}
-        <div
-          className="absolute inset-0 opacity-[0.04]"
-          style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z' fill='%23ffffff'/%3E%3C/g%3E%3C/svg%3E")`,
-          }}
-        />
-        <div className="container relative text-center">
-          <motion.h1
-            className="mx-auto max-w-3xl font-serif text-4xl font-bold leading-tight md:text-6xl"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: [0, -3, 0] }}
-            transition={{
-              opacity: { duration: 0.6 },
-              y: { duration: 4, repeat: Infinity, ease: "easeInOut", delay: 0.6 },
-            }}
+
+        <div className="relative z-10 w-full max-w-5xl mx-auto text-center mt-12">
+          <motion.div 
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            className="flex items-center justify-center mb-8"
           >
-            {heroTitle}
+            <div className="uppercase tracking-[0.2em] text-xs font-semibold text-white/90 border border-white/30 rounded-full px-6 py-2 backdrop-blur-sm bg-white/10 flex items-center gap-3">
+              <span className="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+              NEW: ADVANCED VINYASA SERIES
+            </div>
+          </motion.div>
+
+          <motion.h1 
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+            className="font-serif text-5xl md:text-7xl lg:text-8xl text-white mb-6 leading-tight"
+          >
+            Amplify Your Life <br />
+            <span className="text-secondary italic">Through Yoga</span>
           </motion.h1>
-          <motion.p
-            className="mx-auto mt-6 max-w-xl text-lg opacity-90"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
+
+          <motion.p 
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.8, delay: 0.4 }}
+            className="max-w-2xl mx-auto text-lg md:text-xl text-white/90 mb-10 font-light"
           >
-            {heroSubtitle}
+            Expert-led classes for every level. Flow, stretch, and meditate — anytime, anywhere. Join a community dedicated to mindful living.
           </motion.p>
-          <motion.p
-            className="mx-auto mt-3 max-w-lg text-sm opacity-80"
+
+          <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.3 }}
+            transition={{ duration: 0.8, delay: 0.6 }}
+            className="flex flex-col sm:flex-row items-center justify-center gap-4"
           >
-            Why practice with us? Expert-led classes, flexible schedules, and a supportive community—all designed to help you build a lasting practice.
-          </motion.p>
-          <motion.div
-            className="mt-8 flex flex-wrap items-center justify-center gap-4"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
-          >
-            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.98 }}>
-              <Button size="lg" variant="secondary" asChild>
-                <Link to="/pricing">Start Your Journey <ArrowRight className="ml-1 h-4 w-4" /></Link>
-              </Button>
-            </motion.div>
-            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.98 }}>
-              <Button size="lg" variant="outline" className="border-2 border-white/50 bg-transparent text-white hover:bg-white/15 hover:text-white" asChild>
-                <Link to="/free-videos">Browse Classes</Link>
-              </Button>
-            </motion.div>
+            <Button size="lg" className="rounded-full bg-secondary text-primary hover:bg-secondary/90 px-8 py-6 text-lg font-semibold transition-all hover:scale-105 shadow-[0_0_30px_rgba(212,248,68,0.3)]">
+              Start Free Trial
+            </Button>
+            <Button size="lg" variant="outline" className="rounded-full border-white text-white hover:bg-white/10 px-8 py-6 text-lg font-medium transition-all hover:scale-105 backdrop-blur-sm bg-black/20">
+              <Play className="mr-2 h-5 w-5 fill-current" /> Browse Classes
+            </Button>
           </motion.div>
         </div>
       </section>
 
-      <WaveDivider />
-
-      <TrustBanner />
-
-      {/* Featured Videos */}
-      <section className="py-20">
-        <div className="container">
-          <div className="mb-12 text-center">
-            <h2 className="font-serif text-3xl font-bold md:text-4xl">Featured Free Classes</h2>
-            <p className="mx-auto mt-3 max-w-2xl text-muted-foreground">
-              Start your practice today — no membership required. Explore our hand-picked selection of beginner-friendly flows, stretching routines, and meditation sessions.
-            </p>
+      {/* Why Ampli5 / Video Library */}
+      <section className="py-24 px-4 bg-background relative z-20 -mt-10 rounded-t-[3rem]">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-16">
+            <motion.h2 
+              initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0}
+              className="font-serif text-4xl md:text-5xl font-bold text-primary"
+            >
+              Video Library
+            </motion.h2>
           </div>
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {featuredVideos.map((video, i) => (
-              <motion.div
-                key={video.id}
-                custom={i}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true }}
-                variants={fadeUp}
-              >
-                <Card className="group overflow-hidden border-0 shadow-md transition-shadow hover:shadow-lg">
-                  <div className="relative aspect-video overflow-hidden">
-                    <img
-                      src={video.thumbnailUrl || "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=800&h=450&fit=crop"}
-                      alt={video.title}
-                      className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                      loading="lazy"
-                    />
-                    <div className="absolute inset-0 flex items-center justify-center bg-foreground/0 transition-colors group-hover:bg-foreground/20">
-                      <Play className="h-12 w-12 text-primary-foreground opacity-0 transition-opacity group-hover:opacity-100" />
+
+          <div className="flex flex-col md:flex-row justify-between items-center mb-10 gap-6">
+            <div className="flex flex-wrap items-center gap-2">
+              {categories.map((cat) => (
+                <button 
+                  key={cat}
+                  onClick={() => setActiveFilter(cat)}
+                  className={`px-5 py-2 rounded-full text-sm font-medium transition-all ${
+                    activeFilter === cat 
+                      ? 'bg-primary text-white shadow-md' 
+                      : 'bg-muted text-foreground/70 hover:bg-primary/10 hover:text-primary'
+                  }`}
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
+            <Link to="/videos" className="text-sm font-semibold flex items-center gap-1 hover:text-primary transition-colors hover:underline underline-offset-4">
+              Explore All 200+ Videos <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <AnimatePresence mode="popLayout">
+              {effectiveVideos.map((video, idx) => (
+                <motion.div 
+                  key={video.id}
+                  layout
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  transition={{ duration: 0.5, delay: idx * 0.1 }}
+                  className="group cursor-pointer"
+                >
+                  <div className="relative rounded-3xl overflow-hidden aspect-[4/3] mb-4 shadow-sm group-hover:shadow-xl transition-all duration-500">
+                    <img src={video.thumbnailUrl} alt={video.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60 group-hover:opacity-80 transition-opacity" />
+                    <div className="absolute top-4 left-4">
+                      <span className="bg-white/90 backdrop-blur-md text-primary text-xs font-bold px-3 py-1.5 rounded-full uppercase tracking-wider">
+                        {video.difficulty || "ALL LEVELS"}
+                      </span>
                     </div>
-                    {video.difficulty && (
-                      <Badge className="absolute left-3 top-3 bg-secondary text-secondary-foreground">{video.difficulty}</Badge>
-                    )}
+                    <div className="absolute bottom-4 right-4 bg-black/50 backdrop-blur-md text-white text-xs font-medium px-2.5 py-1 rounded-md">
+                      {video.duration || "20:00"}
+                    </div>
+                    
+                    {/* Hover Play Button */}
+                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      <div className="w-16 h-16 rounded-full bg-secondary/90 flex items-center justify-center shadow-lg transform scale-50 group-hover:scale-100 transition-transform duration-300">
+                        <Play className="h-6 w-6 text-primary ml-1" />
+                      </div>
+                    </div>
                   </div>
-                  <CardContent className="p-4">
-                    <p className="text-xs text-muted-foreground">{[video.instructor, video.duration].filter(Boolean).join(" · ") || "—"}</p>
-                    <h3 className="mt-1 font-serif text-lg font-semibold leading-snug">
-                      <Link to={`/free-videos/${video.id}`} className="hover:text-primary">{video.title}</Link>
+                  
+                  <div className="px-2">
+                    <div className="flex justify-between items-start mb-1">
+                      <span className="text-secondary font-bold text-xs tracking-widest uppercase">
+                        {(video as any).category || "VINYASA FLOW"}
+                      </span>
+                      <button className="text-muted-foreground hover:text-rose-500 transition-colors">
+                        <Heart className="h-5 w-5" />
+                      </button>
+                    </div>
+                    <h3 className="font-serif text-2xl font-semibold mb-2 group-hover:text-primary transition-colors">
+                      {video.title}
                     </h3>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
-          <div className="mt-8 text-center">
-            <Button variant="outline" asChild>
-              <Link to="/free-videos">View All Videos <ArrowRight className="ml-1 h-4 w-4" /></Link>
-            </Button>
+                    <div className="flex items-center gap-2">
+                      <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center overflow-hidden">
+                        <span className="text-[10px] font-bold text-primary">{video.instructor?.[0] || "I"}</span>
+                      </div>
+                      <span className="text-sm text-muted-foreground">with {video.instructor || "Instructor"}</span>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </AnimatePresence>
           </div>
         </div>
       </section>
 
-      <GradientStrip />
+      {/* How It Works */}
+      <section className="py-24 bg-primary text-white relative overflow-hidden">
+        {/* Abstract background shapes */}
+        <div className="absolute top-0 right-0 w-96 h-96 bg-secondary/5 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2" />
+        <div className="absolute bottom-0 left-0 w-96 h-96 bg-white/5 rounded-full blur-[100px] translate-y-1/2 -translate-x-1/2" />
+        
+        <div className="max-w-6xl mx-auto px-4 relative z-10">
+          <div className="text-center mb-20">
+            <span className="uppercase tracking-widest text-secondary text-sm font-semibold mb-3 block">Simple Process</span>
+            <motion.h2 
+              initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0}
+              className="font-serif text-4xl md:text-6xl font-bold"
+            >
+              How It Works
+            </motion.h2>
+          </div>
 
-      {/* Benefits */}
-      <section className="bg-muted py-20">
-        <div className="container">
-          <h2 className="mb-4 text-center font-serif text-3xl font-bold md:text-4xl">Why Ampli5?</h2>
-          <p className="mx-auto mb-12 max-w-2xl text-center text-muted-foreground">
-            We believe yoga should be accessible, adaptable, and aligned with your life. Here's what makes Ampli5 different.
-          </p>
-          <div className="grid gap-8 md:grid-cols-3">
+          <div className="grid md:grid-cols-3 gap-12 text-center">
             {[
-              { icon: Play, title: "200+ Classes", desc: "From gentle yin to power yoga, restorative flows to energizing vinyasa—there's a class for every mood, level, and schedule." },
-              { icon: Users, title: "Expert Instructors", desc: "Learn from certified, passionate teachers with years of experience. Each class is thoughtfully designed to guide you safely and effectively." },
-              { icon: Star, title: "Practice Anywhere", desc: "Stream on any device—phone, tablet, or TV. Your yoga studio goes wherever you go. No commute, no waiting." },
-            ].map((item, i) => (
-              <motion.div
-                key={i}
-                custom={i}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true }}
-                variants={fadeUp}
-                className="text-center"
+              { num: 1, title: "Sign Up", desc: "Create your free account in less than 30 seconds. No credit card required for free tier.", active: true },
+              { num: 2, title: "Choose a Plan", desc: "Select the membership that fits your lifestyle. Monthly or annual options available.", active: false },
+              { num: 3, title: "Stream Anywhere", desc: "Access unlimited classes on your phone, tablet, laptop or TV. Just press play.", active: false }
+            ].map((step, i) => (
+              <motion.div 
+                key={step.num}
+                custom={i+1} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}
+                className="flex flex-col items-center"
               >
-                <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-primary/10">
-                  <item.icon className="h-7 w-7 text-primary" />
+                <div className={`w-20 h-20 rounded-full flex items-center justify-center text-2xl font-bold mb-6 transition-all duration-500
+                  ${step.active ? 'border-2 border-secondary text-secondary bg-secondary/10 shadow-[0_0_30px_rgba(212,248,68,0.2)]' : 'border border-white/20 text-white/50 bg-white/5'}`}
+                >
+                  {step.num}
                 </div>
-                <h3 className="mt-4 font-serif text-xl font-semibold">{item.title}</h3>
-                <p className="mt-2 text-muted-foreground">{item.desc}</p>
+                <h3 className="text-2xl font-serif font-semibold mb-4">{step.title}</h3>
+                <p className="text-white/70 leading-relaxed font-light">{step.desc}</p>
               </motion.div>
             ))}
           </div>
         </div>
       </section>
-
-      <HowItWorks />
 
       {/* Testimonials */}
-      <section className="py-20">
-        <div className="container">
-          <h2 className="mb-12 text-center font-serif text-3xl font-bold md:text-4xl">What Our Members Say</h2>
-          <div className="grid gap-6 md:grid-cols-3">
+      <section className="py-24 bg-muted/50">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="text-center mb-16">
+            <motion.h2 
+              initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0}
+              className="font-serif text-4xl md:text-5xl font-bold text-primary mb-4"
+            >
+              What Our Members Say
+            </motion.h2>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8">
             {effectiveTestimonials.map((t, i) => (
-              <motion.div key={t.id || i} custom={i} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}>
-                <Card className="h-full border-0 shadow-sm">
-                  <CardContent className="flex h-full flex-col p-6">
-                    <p className="flex-1 text-foreground/80 italic">"{t.text}"</p>
-                    <div className="mt-4 border-t pt-4">
-                      <p className="font-semibold">{t.author || "—"}</p>
+              <motion.div 
+                key={t.id || i} 
+                custom={i+1} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}
+              >
+                <Card className="h-full border-none shadow-sm hover:shadow-xl transition-all duration-300 rounded-3xl bg-white overflow-hidden group">
+                  <CardContent className="p-8 relative">
+                    <span className="absolute top-6 left-6 text-6xl text-primary/10 font-serif leading-none rotate-180">"</span>
+                    <p className="text-foreground/80 italic relative z-10 mt-6 min-h-[120px] font-light leading-relaxed">"{t.text}"</p>
+                    <div className="mt-8 flex items-center gap-4">
+                      <div className="w-12 h-12 rounded-full overflow-hidden bg-primary/10">
+                        <img src={`https://i.pravatar.cc/150?u=${t.author}`} alt="avatar" className="w-full h-full object-cover" />
+                      </div>
+                      <div>
+                        <p className="font-bold text-primary">{t.author}</p>
+                        <p className="text-xs text-muted-foreground uppercase tracking-wider">Member since {(t as any).memberSince || "2022"}</p>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
@@ -369,83 +328,79 @@ const Index = () => {
         </div>
       </section>
 
-      <PromoBanner />
-
-      {/* Blog Highlights */}
-      <section className="bg-muted py-20">
-        <div className="container">
-          <h2 className="mb-12 text-center font-serif text-3xl font-bold md:text-4xl">From the Blog</h2>
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {effectiveBlogPosts.map((post, i) => (
-              <motion.div key={post.id} custom={i} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}>
-                <Card className="group overflow-hidden border-0 shadow-sm">
-                  <CardContent className="p-4">
-                    <p className="text-xs text-muted-foreground">{post.publishedAt || post.tag || ""}</p>
-                    <h3 className="mt-1 font-serif text-lg font-semibold leading-snug">
-                      <Link to={`/blog/${post.slug || post.id}`} className="hover:text-primary">{post.title}</Link>
-                    </h3>
-                    <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">{post.excerpt || ""}</p>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
+      {/* Wellness Literature / Blog */}
+      <section className="py-24 bg-background">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="text-center mb-16">
+            <motion.h2 
+              initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0}
+              className="font-serif text-4xl md:text-5xl font-bold text-primary mb-4"
+            >
+              From the Blog
+            </motion.h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto">Wellness tips, instructor stories, and community news.</p>
           </div>
-          <div className="mt-8 text-center">
-            <Button variant="outline" asChild>
-              <Link to="/blog">Read More <BookOpen className="ml-1 h-4 w-4" /></Link>
-            </Button>
-          </div>
-        </div>
-      </section>
 
-      {/* Recommended Reads */}
-      <section className="py-20">
-        <div className="container">
-          <h2 className="mb-4 text-center font-serif text-3xl font-bold md:text-4xl">Books We Love</h2>
-          <p className="mx-auto mb-10 max-w-2xl text-center text-muted-foreground">
-            A short, curated list of books to deepen your understanding of yoga, movement, and mindfulness beyond the mat. These titles have shaped our practice and we recommend them to students at every stage.
-          </p>
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {books.map((book, i) => (
-              <motion.div
-                key={book.title}
-                custom={i}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true }}
-                variants={fadeUp}
+          <div className="grid md:grid-cols-3 gap-8">
+            {fallbackBlogPosts.map((post, i) => (
+              <motion.div 
+                key={post.id} 
+                custom={i} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}
+                className="group cursor-pointer"
               >
-                <Card className="h-full border-0 shadow-sm">
-                  <CardContent className="flex h-full flex-col p-5">
-                    <h3 className="font-serif text-lg font-semibold">{book.title}</h3>
-                    <p className="mt-1 text-sm text-primary font-medium">{book.author}</p>
-                    <p className="mt-3 flex-1 text-sm text-muted-foreground">{book.description}</p>
-                    {book.url && (
-                      <Button asChild variant="outline" size="sm" className="mt-4">
-                        <a href={book.url} target="_blank" rel="noopener noreferrer">
-                          Learn more
-                        </a>
-                      </Button>
-                    )}
-                  </CardContent>
-                </Card>
+                <div className="rounded-3xl overflow-hidden aspect-[16/10] mb-5">
+                  <img src={post.thumbnailUrl} alt={post.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                </div>
+                <div className="px-2">
+                  <div className="flex items-center justify-between mb-3 text-xs uppercase tracking-widest font-semibold">
+                    <span className="text-primary">{post.tag}</span>
+                    <span className="text-muted-foreground">{post.publishedAt}</span>
+                  </div>
+                  <h3 className="font-serif text-2xl font-bold mb-3 group-hover:text-primary transition-colors">{post.title}</h3>
+                  <p className="text-muted-foreground leading-relaxed mb-4">{post.excerpt}</p>
+                  <span className="text-sm font-bold text-primary flex items-center gap-1 group-hover:gap-2 transition-all">
+                    Read Article <ArrowRight className="h-4 w-4" />
+                  </span>
+                </div>
               </motion.div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="bg-primary py-20 text-primary-foreground">
-        <div className="container text-center">
-          <h2 className="font-serif text-3xl font-bold md:text-4xl">Ready to Transform Your Practice?</h2>
-          <p className="mx-auto mt-4 max-w-md opacity-90">Join thousands of yogis. Plans start at just $10/month.</p>
-          <Button size="lg" variant="secondary" className="mt-8" asChild>
-            <Link to="/pricing">View Plans <ArrowRight className="ml-1 h-4 w-4" /></Link>
-          </Button>
+      {/* CTA Section */}
+      <section className="py-32 bg-primary relative overflow-hidden">
+        {/* Hexagon Pattern Overlay */}
+        <div className="absolute inset-0 opacity-5" style={{ backgroundImage: "url('data:image/svg+xml,%3Csvg width=\\'60\\' height=\\'60\\' viewBox=\\'0 0 60 60\\' xmlns=\\'http://www.w3.org/2000/svg\\'%3E%3Cpath d=\\'M54.627 0l.83.477-27.14 47.01-27.14-47.01.83-.477L28.317 45.41l1.366-2.366L6.5 6.5h47l-23.18 40.15 1.366 2.365zM28.318 0l27.14 47.008-.83.48-26.31-45.564-26.31 45.564-.83-.48L28.318 0z\\' fill=\\'%23ffffff\\' fill-rule=\\'evenodd\\'/%3E%3C/svg%3E')" }} />
+        
+        <div className="max-w-4xl mx-auto px-4 relative z-10 text-center text-white">
+          <motion.h2 
+            initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }}
+            className="font-serif text-5xl md:text-6xl font-bold mb-6"
+          >
+            Ready to deepen your practice?
+          </motion.h2>
+          <motion.p 
+            initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6, delay: 0.2 }}
+            className="text-white/70 text-lg md:text-xl mb-12"
+          >
+            Join thousands of members who are transforming their lives one breath at a time.
+          </motion.p>
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6, delay: 0.3 }}
+            className="flex flex-col sm:flex-row items-center justify-center gap-4"
+          >
+            <Button size="lg" className="rounded-full bg-secondary text-primary hover:bg-secondary/90 px-8 py-6 text-lg font-bold w-full sm:w-auto shadow-[0_0_20px_rgba(212,248,68,0.3)]">
+              View Pricing Plans
+            </Button>
+            <Button size="lg" variant="outline" className="rounded-full border-white/30 text-white hover:bg-white/10 px-8 py-6 text-lg font-bold w-full sm:w-auto backdrop-blur-sm">
+              Contact Sales
+            </Button>
+          </motion.div>
         </div>
       </section>
-    </>
+
+    </div>
   );
 };
 

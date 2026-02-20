@@ -35,8 +35,8 @@ const Register = () => {
       }
       return;
     }
-    toast.success("Account created! Please check your email for a confirmation link before logging in.");
-    navigate("/login");
+    toast.success("Account created successfully!");
+    navigate("/");
   };
 
   return (

@@ -32,11 +32,7 @@ const Login = () => {
     const { error } = await signIn(email, password);
     setSubmitting(false);
     if (error) {
-      if (error.message.toLowerCase().includes("email not confirmed")) {
-        toast.error("Please confirm your email address. Check your inbox (and spam folder) for the confirmation link.");
-      } else {
-        toast.error(error.message);
-      }
+      toast.error(error.message);
       return;
     }
     toast.success("Welcome back!");
