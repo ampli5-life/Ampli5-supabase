@@ -86,7 +86,7 @@ const Login = () => {
               </CardContent>
               <CardFooter className="flex flex-col gap-4">
                 <Button type="submit" className="w-full" disabled={submitting}>Log In</Button>
-                <GoogleSignInButton onSuccess={() => navigate(from)} />
+                <GoogleSignInButton redirectTo={window.location.href} />
                 <p className="text-center text-sm text-muted-foreground">
                   Don&apos;t have an account?{" "}
                   <Link to="/register" className="font-medium text-primary hover:underline">Sign up</Link>

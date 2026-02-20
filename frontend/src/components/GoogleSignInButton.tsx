@@ -3,13 +3,14 @@ import { Button } from "@/components/ui/button";
 
 interface GoogleSignInButtonProps {
   onSuccess?: () => void;
+  redirectTo?: string;
 }
 
-export function GoogleSignInButton({ onSuccess }: GoogleSignInButtonProps = {}) {
+export function GoogleSignInButton({ onSuccess, redirectTo }: GoogleSignInButtonProps = {}) {
   const { signInWithGoogleOAuthRedirect } = useAuth();
 
   const handleClick = () => {
-    void signInWithGoogleOAuthRedirect();
+    void signInWithGoogleOAuthRedirect(redirectTo);
     onSuccess?.();
   };
 

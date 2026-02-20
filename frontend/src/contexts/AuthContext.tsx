@@ -39,7 +39,7 @@ interface AuthContextValue {
   signIn: (email: string, password: string) => Promise<{ error: { message: string } | null }>;
   signUp: (email: string, password: string, fullName: string) => Promise<{ error: { message: string } | null }>;
   signInWithGoogle: (idToken: string) => Promise<{ error: { message: string } | null }>;
-  signInWithGoogleOAuthRedirect: () => Promise<void>;
+  signInWithGoogleOAuthRedirect: (redirectTo?: string) => Promise<void>;
   signOut: () => void;
   updateProfile: (updates: Partial<Profile>) => void;
   isSubscribed: boolean;
@@ -278,8 +278,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [loadProfile]
   );
 
-  const signInWithGoogleOAuthRedirect = useCallback(async () => {
-    const redirectTo = `${window.location.origin}/`;
+  const signInWithGoogleOAuthRedirect = useCallback(async (customRedirect?: string) => {
+    const redirectTo = customRedirect || window.location.href;
     await supabase.auth.signInWithOAuth({
       provider: "google",
       options: { redirectTo },

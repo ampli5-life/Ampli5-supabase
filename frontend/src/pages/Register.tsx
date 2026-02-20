@@ -104,7 +104,7 @@ const Register = () => {
               </CardContent>
               <CardFooter className="flex flex-col gap-4">
                 <Button type="submit" className="w-full" disabled={submitting}>Sign Up</Button>
-                <GoogleSignInButton onSuccess={() => navigate("/")} />
+                <GoogleSignInButton redirectTo={window.location.href} />
                 <p className="text-center text-sm text-muted-foreground">
                   Already have an account?{" "}
                   <Link to="/login" className="font-medium text-primary hover:underline">Log in</Link>
