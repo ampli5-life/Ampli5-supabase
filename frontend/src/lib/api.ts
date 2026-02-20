@@ -316,9 +316,6 @@ async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> 
       .eq("page_key", key)
       .maybeSingle();
     if (error) {
-      if (import.meta.env.DEV) {
-        try { fetch('http://127.0.0.1:7244/ingest/a06809ba-2f2d-4027-ad1b-0c709d05e1cc', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ location: 'api.ts:page_content_key', message: 'Supabase page_content error', data: { key, errorMessage: error.message }, timestamp: Date.now(), hypothesisId: 'H5' }) }); } catch (_) { }
-      }
       throw new Error(error.message);
     }
     return data as T;
@@ -327,24 +324,33 @@ async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> 
   const method = (options.method ?? "GET").toUpperCase();
 
   if (method === "GET") {
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+    const { data: sessionData } = await supabase.auth.getSession();
+    const token = sessionData?.session?.access_token || getToken() || supabaseKey;
+
     if (table === "profiles" && !key) {
-      const { data, error } = await supabase.from("profiles").select("*");
-      if (error) throw new Error(error.message);
+      const res = await fetch(`${supabaseUrl}/rest/v1/profiles?select=*`, {
+        headers: { apikey: supabaseKey, Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.message || "Failed to load profiles");
       return data as T;
     }
     if (key && table !== "page_content") {
-      const { data, error } = await supabase.from(table).select("*").eq("id", key).single();
-      if (error) throw new Error(error.message);
+      const res = await fetch(`${supabaseUrl}/rest/v1/${table}?select=*&id=eq.${key}`, {
+        headers: { apikey: supabaseKey, Authorization: `Bearer ${token}`, Accept: "application/vnd.pgrst.object+json" },
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.message || "Failed to load item");
       return data as T;
     }
     const sortCol = table === "page_content" ? "page_key" : table === "videos" ? "created_at" : "sort_order";
-    const { data, error } = await supabase.from(table).select("*").order(sortCol, { ascending: true });
-    if (error) {
-      if (import.meta.env.DEV) {
-        try { fetch('http://127.0.0.1:7244/ingest/a06809ba-2f2d-4027-ad1b-0c709d05e1cc', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ location: 'api.ts:GET', message: 'Supabase GET error', data: { table, path, errorMessage: error.message }, timestamp: Date.now(), hypothesisId: 'H5' }) }); } catch (_) { }
-      }
-      throw new Error(error.message);
-    }
+    const res = await fetch(`${supabaseUrl}/rest/v1/${table}?select=*&order=${sortCol}.asc`, {
+      headers: { apikey: supabaseKey, Authorization: `Bearer ${token}` },
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data?.message || "Failed to load data");
     return data as T;
   }
 
