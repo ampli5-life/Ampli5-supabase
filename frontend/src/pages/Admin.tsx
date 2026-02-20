@@ -482,11 +482,19 @@ function VideosSection() {
             <Input type="number" placeholder="Duration (min)" value={String(form.duration ?? "")} onChange={(e) => setForm({ ...form, duration: parseInt(e.target.value, 10) || 0 })} className="w-28" />
           </div>
           <Input placeholder="Instructor" value={String(form.instructor || "")} onChange={(e) => setForm({ ...form, instructor: e.target.value })} />
-          <div className="flex gap-2">
+          <div className="flex gap-2 items-center">
             <Button onClick={save} disabled={uploading}>
               {uploading ? `Uploading... ${uploadProgress > 0 ? `${uploadProgress}%` : ''}` : "Save"}
             </Button>
             <Button variant="outline" onClick={() => { setForm(null); setVideoFile(null); }} disabled={uploading}>Cancel</Button>
+            {uploading && uploadProgress > 0 && (
+              <div className="w-full ml-4 max-w-xs h-2 bg-secondary rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-primary transition-all duration-300 ease-out"
+                  style={{ width: `${uploadProgress}%` }}
+                />
+              </div>
+            )}
           </div>
         </div>
       </Card>
