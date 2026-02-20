@@ -24,10 +24,13 @@ const SubscriptionSuccess = () => {
       return;
     }
     confirmSubscriptionBySession(sessionId)
-      .then(async () => {
+      .then(() => {
         setStatus("success");
-        await refreshSubscription();
-        setTimeout(() => navigate("/free-videos", { replace: true }), 1500);
+        // Refresh subscription state in background — don't block redirect
+        refreshSubscription().catch(() => { });
+        setTimeout(() => {
+          window.location.href = "/free-videos";
+        }, 2000);
       })
       .catch((e) => {
         setStatus("error");
