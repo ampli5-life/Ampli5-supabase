@@ -27,11 +27,16 @@ const Register = () => {
     const { error } = await signUp(email, password, fullName);
     setSubmitting(false);
     if (error) {
-      toast.error(error.message);
+      if (error.message.toLowerCase().includes("already registered") || error.message.toLowerCase().includes("already exists")) {
+        toast.error("This email is already registered. Please log in instead.");
+        navigate(`/login?next=${encodeURIComponent("/")}`);
+      } else {
+        toast.error(error.message);
+      }
       return;
     }
-    toast.success("Account created!");
-    navigate("/");
+    toast.success("Account created! Please check your email for a confirmation link before logging in.");
+    navigate("/login");
   };
 
   return (
