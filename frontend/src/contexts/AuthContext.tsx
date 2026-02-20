@@ -8,7 +8,7 @@ import {
 } from "react";
 import { supabase } from "@/lib/supabase";
 import {
-  getToken,
+  getTokenAsync,
   setToken,
   TOKEN_KEY,
   getSubscriptionStatus,
@@ -82,7 +82,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const refreshSubscription = useCallback(async () => {
-    const token = getToken();
+    const token = await getTokenAsync();
     if (!token) {
       setIsSubscribed(false);
       setSubscriptionInfo(null);
@@ -152,11 +152,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (restored) {
       setLoading(false);
       refreshProfileAdminFlag(restored.id);
+      refreshSubscription().catch(() => { });
     }
     const timeoutId = window.setTimeout(() => {
       const restoredTimeout = restoreFromStorage();
       setLoading(false);
-      if (restoredTimeout) refreshProfileAdminFlag(restoredTimeout.id);
+      if (restoredTimeout) {
+        refreshProfileAdminFlag(restoredTimeout.id);
+        refreshSubscription().catch(() => { });
+      }
     }, 3000);
     supabase.auth.getSession()
       .then(({ data: { session } }) => {
