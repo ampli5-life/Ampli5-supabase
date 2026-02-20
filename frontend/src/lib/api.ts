@@ -394,9 +394,25 @@ async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> 
 
     const body = JSON.parse((options as { body: string }).body ?? "{}") as Record<string, unknown>;
     const insertBody = table === "schedules" ? mapScheduleBody(body) : body;
-    const { data, error } = await supabase.from(table).insert(insertBody).select().single();
-    if (error) throw new Error(error.message);
-    return data as T;
+
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+    const { data: sd } = await supabase.auth.getSession();
+    const tok = sd?.session?.access_token || getToken() || supabaseKey;
+
+    const res = await fetch(`${supabaseUrl}/rest/v1/${table}`, {
+      method: "POST",
+      headers: {
+        apikey: supabaseKey,
+        Authorization: `Bearer ${tok}`,
+        "Content-Type": "application/json",
+        Prefer: "return=representation",
+      },
+      body: JSON.stringify(insertBody),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data?.message || data?.error || "Failed to create");
+    return (Array.isArray(data) ? data[0] : data) as T;
   }
 
   if (method === "PUT" || method === "PATCH") {
@@ -408,20 +424,46 @@ async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> 
     if (table === "profiles" && typeof admin === "boolean") {
       (updates as Record<string, unknown>).is_admin = admin;
     }
-    const { data, error } = await supabase
-      .from(table)
-      .update(updates)
-      .eq("id", key)
-      .select()
-      .single();
-    if (error) throw new Error(error.message);
-    return data as T;
+
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+    const { data: sd } = await supabase.auth.getSession();
+    const tok = sd?.session?.access_token || getToken() || supabaseKey;
+
+    const res = await fetch(`${supabaseUrl}/rest/v1/${table}?id=eq.${key}`, {
+      method: "PATCH",
+      headers: {
+        apikey: supabaseKey,
+        Authorization: `Bearer ${tok}`,
+        "Content-Type": "application/json",
+        Prefer: "return=representation",
+      },
+      body: JSON.stringify(updates),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data?.message || data?.error || "Failed to update");
+    return (Array.isArray(data) ? data[0] : data) as T;
   }
 
   if (method === "DELETE") {
     if (!key) throw new Error("ID required for delete");
-    const { error } = await supabase.from(table).delete().eq("id", key);
-    if (error) throw new Error(error.message);
+
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+    const { data: sd } = await supabase.auth.getSession();
+    const tok = sd?.session?.access_token || getToken() || supabaseKey;
+
+    const res = await fetch(`${supabaseUrl}/rest/v1/${table}?id=eq.${key}`, {
+      method: "DELETE",
+      headers: {
+        apikey: supabaseKey,
+        Authorization: `Bearer ${tok}`,
+      },
+    });
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      throw new Error((data as { message?: string })?.message || "Failed to delete");
+    }
     return undefined as T;
   }
 
