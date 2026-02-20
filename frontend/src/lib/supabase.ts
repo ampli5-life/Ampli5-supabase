@@ -3,16 +3,37 @@ import { createClient } from "@supabase/supabase-js";
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL ?? "";
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY ?? "";
 
-if (import.meta.env.DEV && typeof fetch !== "undefined") {
-  fetch('http://127.0.0.1:7244/ingest/a06809ba-2f2d-4027-ad1b-0c709d05e1cc',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'supabase.ts:init',message:'Supabase env check',data:{hasUrl:!!supabaseUrl,hasAnonKey:!!supabaseAnonKey,urlPrefix:supabaseUrl ? supabaseUrl.slice(0,36)+'...' : ''},timestamp:Date.now(),hypothesisId:'H1'})}).catch(()=>{});
-}
-
 if (!supabaseUrl || !supabaseAnonKey) {
   console.warn("VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY must be set");
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+// Extract project ref from URL for project-specific storage key
+const projectRef = supabaseUrl.match(/https:\/\/([^.]+)\./)?.[1] ?? "default";
+
+// Clean up auth tokens from any old Supabase project to avoid stale session conflicts
+try {
+  const keysToRemove: string[] = [];
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    if (key && key.startsWith("sb-") && key.endsWith("-auth-token") && !key.includes(projectRef)) {
+      keysToRemove.push(key);
+    }
+  }
+  keysToRemove.forEach((k) => localStorage.removeItem(k));
+} catch {
+  // ignore storage errors
+}
+
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    storageKey: `sb-${projectRef}-auth-token`,
+    autoRefreshToken: true,
+    persistSession: true,
+    detectSessionInUrl: true,
+  },
+});
 
 export function getSupabaseUrl(): string {
   return supabaseUrl;
 }
+
