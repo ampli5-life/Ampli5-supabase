@@ -28,17 +28,32 @@ const FreeVideos = () => {
   const [selectedCategory, setSelectedCategory] = useState("All");
 
   useEffect(() => {
-    const VIDEO_LOAD_TIMEOUT_MS = 12000;
-    const timeoutPromise = new Promise<Video[]>((resolve) => {
-      window.setTimeout(() => resolve([]), VIDEO_LOAD_TIMEOUT_MS);
-    });
-    Promise.race([
-      api.get<Video[]>("/videos"),
-      timeoutPromise,
-    ])
+    // Use direct REST API fetch to bypass Supabase JS client auth session hangs.
+    // Videos have a public RLS policy (USING true) so no auth is needed.
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 8000);
+
+    fetch(`${supabaseUrl}/rest/v1/videos?select=*&order=created_at.asc`, {
+      headers: {
+        apikey: supabaseKey,
+        Authorization: `Bearer ${supabaseKey}`,
+      },
+      signal: controller.signal,
+    })
+      .then((res) => res.json())
       .then((data) => setVideos(Array.isArray(data) ? data : []))
       .catch(() => setVideos([]))
-      .finally(() => setLoading(false));
+      .finally(() => {
+        clearTimeout(timeout);
+        setLoading(false);
+      });
+
+    return () => {
+      clearTimeout(timeout);
+      controller.abort();
+    };
   }, []);
 
   const categories = ["All", ...Array.from(new Set((videos || []).map((v) => v.category).filter(Boolean) as string[]))];
