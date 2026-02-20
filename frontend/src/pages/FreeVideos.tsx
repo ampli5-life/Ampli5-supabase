@@ -56,15 +56,24 @@ const FreeVideos = () => {
     };
   }, []);
 
-  const categories = ["All", ...Array.from(new Set((videos || []).map((v) => v.category).filter(Boolean) as string[]))];
+  const isPaid = (v: Video) => v.is_paid === true || (v as { isPaid?: boolean }).isPaid === true;
+  const formatDuration = (d?: number) => (d != null && d > 0 ? `${d} min` : "");
+
+  const predefinedFilters = ["All", "Free", "Paid", "Beginner", "Intermediate", "Advanced"];
+  const dynamicCategories = Array.from(new Set((videos || []).map((v) => v.category).filter(Boolean) as string[]));
+  const otherCategories = dynamicCategories.filter(c => !predefinedFilters.map(f => f.toLowerCase()).includes(c.toLowerCase()));
+  const filterOptions = [...predefinedFilters, ...otherCategories.map(c => c.charAt(0).toUpperCase() + c.slice(1))];
+
   const filtered = videos.filter((v) => {
     if (search && !v.title.toLowerCase().includes(search.toLowerCase())) return false;
-    if (selectedCategory !== "All" && v.category !== selectedCategory) return false;
+    if (selectedCategory !== "All") {
+      const lowerFilter = selectedCategory.toLowerCase();
+      if (lowerFilter === "free" && isPaid(v)) return false;
+      else if (lowerFilter === "paid" && !isPaid(v)) return false;
+      else if (lowerFilter !== "free" && lowerFilter !== "paid" && (v.category || "").toLowerCase() !== lowerFilter) return false;
+    }
     return true;
   });
-
-  const formatDuration = (d?: number) => (d != null && d > 0 ? `${d} min` : "");
-  const isPaid = (v: Video) => v.is_paid === true || (v as { isPaid?: boolean }).isPaid === true;
 
   /** Extract YouTube video ID from various URL formats */
   function extractYouTubeId(url?: string): string | null {
@@ -129,11 +138,11 @@ const FreeVideos = () => {
               />
             </div>
             <div className="flex flex-wrap gap-2">
-              {categories.map((cat) => (
+              {filterOptions.map((cat) => (
                 <Button
                   key={cat}
                   size="sm"
-                  variant={selectedCategory === cat ? "default" : "outline"}
+                  variant={selectedCategory.toLowerCase() === cat.toLowerCase() ? "default" : "outline"}
                   onClick={() => setSelectedCategory(cat)}
                 >
                   {cat}
