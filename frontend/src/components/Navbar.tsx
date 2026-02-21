@@ -69,7 +69,7 @@ const Navbar = () => {
       <nav className="max-w-7xl mx-auto flex items-center justify-between px-6">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2 group relative">
-          <img src="/logo.png" alt="Ampli5" className="h-9 object-contain transition-transform group-hover:scale-105 duration-300" />
+          <img src="/logo.png" alt="Ampli5" className={`h-9 object-contain transition-all group-hover:scale-105 duration-300 ${isTransparent ? 'brightness-0 invert' : 'dark:brightness-0 dark:invert'}`} />
           <span className={`font-serif text-xl font-bold tracking-tight transition-colors duration-300 hidden sm:inline ${isTransparent ? 'text-white' : 'text-foreground'}`}>
             .Life
           </span>
