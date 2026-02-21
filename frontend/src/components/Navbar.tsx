@@ -62,17 +62,17 @@ const Navbar = () => {
       animate={{ y: 0 }}
       transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ease-out ${isTransparent
-          ? "bg-transparent py-5"
-          : "bg-background/80 backdrop-blur-xl py-3 shadow-[0_1px_0_0_hsl(var(--border)/0.5)]"
+        ? "bg-transparent py-5"
+        : "bg-background/80 backdrop-blur-xl py-3 shadow-[0_1px_0_0_hsl(var(--border)/0.5)]"
         }`}
     >
       <nav className="max-w-7xl mx-auto flex items-center justify-between px-6">
         {/* Logo */}
-        <Link to="/" className="flex items-center gap-1 group relative">
-          <span className={`font-serif text-2xl font-bold tracking-tight transition-colors duration-300 ${isTransparent ? 'text-white' : 'text-foreground'}`}>
-            Ampli5
+        <Link to="/" className="flex items-center gap-2 group relative">
+          <img src="/logo.png" alt="Ampli5" className="h-9 object-contain transition-transform group-hover:scale-105 duration-300" />
+          <span className={`font-serif text-xl font-bold tracking-tight transition-colors duration-300 hidden sm:inline ${isTransparent ? 'text-white' : 'text-foreground'}`}>
+            .Life
           </span>
-          <span className="text-[hsl(71,95%,60%)] text-2xl font-bold leading-none transition-transform group-hover:scale-125 group-hover:rotate-12 duration-300">.</span>
         </Link>
 
         {/* Desktop Nav */}

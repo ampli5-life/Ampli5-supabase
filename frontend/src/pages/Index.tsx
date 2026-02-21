@@ -11,7 +11,7 @@ const fadeUp = {
   visible: (i: number) => ({
     opacity: 1,
     y: 0,
-    transition: { delay: i * 0.12, duration: 0.7, ease: [0.16, 1, 0.3, 1] },
+    transition: { delay: i * 0.12, duration: 0.7, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] },
   }),
 };
 
@@ -24,10 +24,13 @@ interface Video {
   id: string;
   title: string;
   thumbnailUrl?: string;
+  thumbnail_url?: string;
+  youtube_url?: string;
   instructor?: string;
   duration?: string;
   difficulty?: string;
   is_paid?: boolean;
+  category?: string;
 }
 
 interface BlogPost {
@@ -89,6 +92,25 @@ const Index = () => {
   ];
 
   const categories = ["All", "Vinyasa", "Hatha", "Meditation", "Restorative"];
+
+  // Thumbnail helpers (same logic as FreeVideos page)
+  function extractYouTubeId(url?: string): string | null {
+    if (!url) return null;
+    const patterns = [
+      /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/,
+      /^([a-zA-Z0-9_-]{11})$/,
+    ];
+    for (const p of patterns) { const m = url.match(p); if (m) return m[1]; }
+    return null;
+  }
+
+  function getThumb(v: Video): string {
+    const provided = v.thumbnailUrl || v.thumbnail_url;
+    if (provided) return provided;
+    const ytId = extractYouTubeId(v.youtube_url);
+    if (ytId) return `https://img.youtube.com/vi/${ytId}/hqdefault.jpg`;
+    return "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?q=80&w=800";
+  }
 
   if (loading) {
     return (
@@ -237,7 +259,7 @@ const Index = () => {
               ))}
             </div>
             <Link to="/free-videos" className="text-sm font-bold flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors group">
-              Explore All 200+ Videos
+              Explore Videos
               <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
             </Link>
           </motion.div>
@@ -261,7 +283,7 @@ const Index = () => {
                     {/* Thumbnail */}
                     <div className="relative rounded-2xl overflow-hidden aspect-[4/3] mb-5 bg-muted">
                       <img
-                        src={video.thumbnailUrl || "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?q=80&w=800"}
+                        src={getThumb(video)}
                         alt={video.title}
                         className="w-full h-full object-cover transition-all duration-700 group-hover:scale-110 group-hover:brightness-75"
                       />

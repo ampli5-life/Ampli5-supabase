@@ -8,11 +8,11 @@ const Footer = () => (
     <div className="max-w-7xl mx-auto px-6">
       <div className="grid gap-12 md:grid-cols-4 lg:grid-cols-5 mb-16">
         <div className="lg:col-span-2">
-          <Link to="/" className="inline-flex items-center gap-1 mb-6 group">
-            <span className="font-serif text-3xl font-bold tracking-tight">
-              Ampli5
+          <Link to="/" className="inline-flex items-center gap-2 mb-6 group">
+            <img src="/logo.png" alt="Ampli5" className="h-10 object-contain brightness-0 invert transition-transform group-hover:scale-105 duration-300" />
+            <span className="font-serif text-xl font-bold tracking-tight">
+              .Life
             </span>
-            <span className="text-[hsl(71,95%,60%)] text-3xl font-bold leading-none transition-transform group-hover:scale-125 group-hover:rotate-12 duration-300">.</span>
           </Link>
           <p className="text-current/60 text-sm leading-relaxed max-w-sm">
             Empowering you to live a healthier, more mindful life through accessible yoga and wellness practices.
