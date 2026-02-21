@@ -29,12 +29,7 @@ const Register = () => {
     const fullName = (name || "").trim() || "User";
     setSubmitting(true);
     try {
-      const result = await Promise.race([
-        signUp(email, password, fullName),
-        new Promise<{ error: { message: string } }>((resolve) =>
-          setTimeout(() => resolve({ error: { message: "Signup is taking too long. Please try again." } }), 30000)
-        ),
-      ]);
+      const result = await signUp(email, password, fullName);
       setSubmitting(false);
       if (result.error) {
         if (result.error.message.toLowerCase().includes("already registered") || result.error.message.toLowerCase().includes("already exists") || result.error.message.toLowerCase().includes("log in instead")) {

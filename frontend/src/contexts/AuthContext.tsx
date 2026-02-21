@@ -225,7 +225,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
       try {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 20000);
+        const timeoutId = setTimeout(() => controller.abort(), 60000);
         const res = await fetch(`${url}/auth/v1/signup`, {
           method: "POST",
           headers: {
@@ -277,7 +277,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
       try {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 20000);
+        const timeoutId = setTimeout(() => controller.abort(), 60000);
         const res = await fetch(`${url}/auth/v1/token?grant_type=password`, {
           method: "POST",
           headers: {
