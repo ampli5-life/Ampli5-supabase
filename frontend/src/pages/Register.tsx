@@ -29,23 +29,26 @@ const Register = () => {
     const fullName = (name || "").trim() || "User";
     setSubmitting(true);
     try {
-      const { error } = await signUp(email, password, fullName);
-      if (error) {
-        if (error.message.toLowerCase().includes("already registered") || error.message.toLowerCase().includes("already exists") || error.message.toLowerCase().includes("log in instead")) {
+      // Add timeout to prevent hanging forever
+      const result = await Promise.race([
+        signUp(email, password, fullName),
+        new Promise<{ error: { message: string } }>((resolve) =>
+          setTimeout(() => resolve({ error: { message: "Signup is taking too long. Please try again." } }), 15000)
+        ),
+      ]);
+      if (result.error) {
+        if (result.error.message.toLowerCase().includes("already registered") || result.error.message.toLowerCase().includes("already exists") || result.error.message.toLowerCase().includes("log in instead")) {
           toast.error("This email is already registered. Please log in.");
           navigate(`/login`);
         } else {
-          toast.error(error.message);
+          toast.error(result.error.message);
         }
         setSubmitting(false);
         return;
       }
-      // Signup succeeded — check if user is now logged in
       toast.success("Account created successfully!");
-      // Small delay to let auth state propagate
-      setTimeout(() => {
-        navigate("/");
-      }, 500);
+      setSubmitting(false);
+      navigate("/");
     } catch {
       toast.error("Something went wrong. Please try again.");
       setSubmitting(false);

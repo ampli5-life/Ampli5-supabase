@@ -30,10 +30,15 @@ const Login = () => {
     }
     setSubmitting(true);
     try {
-      const { error } = await signIn(email, password);
+      const result = await Promise.race([
+        signIn(email, password),
+        new Promise<{ error: { message: string } }>((resolve) =>
+          setTimeout(() => resolve({ error: { message: "Login is taking too long. Please try again." } }), 15000)
+        ),
+      ]);
       setSubmitting(false);
-      if (error) {
-        toast.error(error.message);
+      if (result.error) {
+        toast.error(result.error.message);
         return;
       }
       toast.success("Welcome back!");
