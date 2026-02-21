@@ -77,8 +77,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     try {
       const data = await getSubscriptionStatus();
-      setIsSubscribed(data?.isSubscribed ?? false);
-      setSubscriptionInfo(subscriptionInfoFromStatus(data ?? null));
+      const status = data?.isSubscribed ?? false;
+      const info = subscriptionInfoFromStatus(data ?? null);
+      setIsSubscribed(status);
+      setSubscriptionInfo(info);
+      // Persist to storage for instant load on refresh
+      localStorage.setItem("ampli5_subscription", JSON.stringify({ isSubscribed: status, info }));
     } catch {
       setIsSubscribed(false);
       setSubscriptionInfo(null);
@@ -146,6 +150,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (restored) {
       setLoading(false);
       refreshProfileAdminFlag(restored.id);
+
+      // Attempt to restore subscription info instantly
+      try {
+        const storedSub = localStorage.getItem("ampli5_subscription");
+        if (storedSub) {
+          const { isSubscribed: s, info } = JSON.parse(storedSub);
+          setIsSubscribed(s);
+          setSubscriptionInfo(info);
+        }
+      } catch { /* ignore */ }
+
       refreshSubscription().catch(() => { });
     }
     const timeoutId = window.setTimeout(() => {
@@ -178,6 +193,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if ((event === "SIGNED_IN" || event === "TOKEN_REFRESHED") && session) {
           setToken(session.access_token);
           await loadProfile(session.user);
+          await refreshSubscription();
         }
       }
     );

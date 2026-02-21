@@ -156,7 +156,7 @@ export async function getSubscriptionStatus(): Promise<SubscriptionStatus> {
 
   try {
     const res = await fetch(
-      `${supabaseUrl}/rest/v1/subscriptions?select=plan_id,start_date,end_date&user_id=eq.${userId}&status=eq.ACTIVE&or=(end_date.is.null,end_date.gte.${now})&order=end_date.desc&limit=1`,
+      `${supabaseUrl}/rest/v1/subscriptions?select=plan_id,start_date,end_date&status=eq.ACTIVE&or=(end_date.is.null,end_date.gte.${now})&order=end_date.desc&limit=1`,
       {
         headers: {
           apikey: supabaseKey,
@@ -165,6 +165,10 @@ export async function getSubscriptionStatus(): Promise<SubscriptionStatus> {
       }
     );
     const subs = await res.json();
+    if (res.status === 401 || res.status === 403) {
+      console.warn("Subscription check failed: Unauthorized. Token might be invalid.");
+      return empty;
+    }
     if (!Array.isArray(subs) || subs.length === 0) return empty;
     const s = subs[0];
     return {
