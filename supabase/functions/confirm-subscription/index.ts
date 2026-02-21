@@ -75,7 +75,7 @@ Deno.serve(async (req) => {
       .maybeSingle();
 
     if (existing) {
-      await supabase
+      const { error } = await supabase
         .from("subscriptions")
         .update({
           status: "ACTIVE",
@@ -84,8 +84,9 @@ Deno.serve(async (req) => {
           end_date: endDate,
         })
         .eq("id", existing.id);
+      if (error) throw error;
     } else {
-      await supabase.from("subscriptions").insert({
+      const { error } = await supabase.from("subscriptions").insert({
         user_id: clientRef,
         stripe_subscription_id: subId,
         plan_id: planId,
@@ -93,6 +94,7 @@ Deno.serve(async (req) => {
         start_date: startDate,
         end_date: endDate,
       });
+      if (error) throw error;
     }
 
     return new Response(

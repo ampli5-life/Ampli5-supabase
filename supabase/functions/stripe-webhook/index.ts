@@ -58,7 +58,7 @@ Deno.serve(async (req) => {
         const endTs = subscription.current_period_end;
         const startDate = startTs ? new Date(startTs * 1000).toISOString() : null;
         const endDate = endTs ? new Date(endTs * 1000).toISOString() : null;
-        await supabase.from("subscriptions").insert({
+        const { error } = await supabase.from("subscriptions").insert({
           user_id: clientRef,
           stripe_subscription_id: subId,
           plan_id: planId,
@@ -66,6 +66,7 @@ Deno.serve(async (req) => {
           start_date: startDate,
           end_date: endDate,
         });
+        if (error) throw error;
       }
     }
   }
@@ -85,7 +86,7 @@ Deno.serve(async (req) => {
       .maybeSingle();
 
     if (existing) {
-      await supabase
+      const { error } = await supabase
         .from("subscriptions")
         .update({
           status: newStatus,
@@ -93,6 +94,7 @@ Deno.serve(async (req) => {
           end_date: endTs ? new Date(endTs * 1000).toISOString() : null,
         })
         .eq("id", existing.id);
+      if (error) throw error;
     }
   }
 
