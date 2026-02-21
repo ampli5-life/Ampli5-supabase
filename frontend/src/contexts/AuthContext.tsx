@@ -162,13 +162,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (session?.user) {
           setToken(session.access_token);
           loadProfile(session.user);
-        } else {
-          setToken(null);
-          setUser(null);
-          setProfile(null);
-          setIsSubscribed(false);
-          setSubscriptionInfo(null);
-          persistProfile(null);
         }
         setLoading(false);
       })
@@ -180,21 +173,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [loadProfile, persistProfile]);
 
   useEffect(() => {
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      if (session?.user) {
-        setToken(session.access_token);
-        await loadProfile(session.user);
-      } else {
-        setToken(null);
-        setUser(null);
-        setProfile(null);
-        setIsSubscribed(false);
-        setSubscriptionInfo(null);
-        persistProfile(null);
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if ((event === "SIGNED_IN" || event === "TOKEN_REFRESHED") && session) {
+          setToken(session.access_token);
+          await loadProfile(session.user);
+        }
       }
-    });
+    );
     return () => subscription.unsubscribe();
   }, [loadProfile, persistProfile]);
 
