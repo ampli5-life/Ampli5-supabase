@@ -224,34 +224,46 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       fullName: string
     ): Promise<{ error: { message: string } | null }> => {
       const trimmedEmail = email.trim().toLowerCase();
-      const { data, error } = await supabase.auth.signUp({
-        email: trimmedEmail,
-        password,
-        options: { data: { full_name: fullName.trim() || "User" } },
-      });
-      if (error) {
-        return { error: { message: error.message } };
-      }
-      if (data.session) {
-        setToken(data.session.access_token);
-        await loadProfile(data.user);
-      } else if (data.user) {
-        // No session means email confirmation is required.
-        // Auto sign-in the user immediately after signup.
-        const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+      try {
+        const { data, error } = await supabase.auth.signUp({
           email: trimmedEmail,
           password,
+          options: { data: { full_name: fullName.trim() || "User" } },
         });
-        if (signInData?.session) {
-          setToken(signInData.session.access_token);
-          await loadProfile(signInData.user);
-        } else if (!signInError) {
-          await loadProfile(data.user);
+        if (error) {
+          return { error: { message: error.message } };
         }
-        // If sign-in also fails (e.g. email not confirmed at Supabase level),
-        // we still return success so the user sees the account was created
+
+        // Check if user already existed (Supabase returns fake user with no session & no identities)
+        if (data.user && (!data.user.identities || data.user.identities.length === 0)) {
+          return { error: { message: "This email is already registered. Please log in instead." } };
+        }
+
+        if (data.session) {
+          setToken(data.session.access_token);
+          await loadProfile(data.user);
+          return { error: null };
+        }
+
+        // No session — try auto sign-in
+        if (data.user) {
+          try {
+            const { data: signInData } = await supabase.auth.signInWithPassword({
+              email: trimmedEmail,
+              password,
+            });
+            if (signInData?.session) {
+              setToken(signInData.session.access_token);
+              await loadProfile(signInData.user);
+            }
+          } catch {
+            // Auto sign-in failed, account was created but user will need to log in separately
+          }
+        }
+        return { error: null };
+      } catch (e) {
+        return { error: { message: e instanceof Error ? e.message : "Signup failed. Please try again." } };
       }
-      return { error: null };
     },
     [loadProfile]
   );

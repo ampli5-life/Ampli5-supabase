@@ -22,21 +22,34 @@ const Register = () => {
       toast.error("Please enter email and password.");
       return;
     }
-    const fullName = (name || "").trim() || "User";
-    setSubmitting(true);
-    const { error } = await signUp(email, password, fullName);
-    setSubmitting(false);
-    if (error) {
-      if (error.message.toLowerCase().includes("already registered") || error.message.toLowerCase().includes("already exists")) {
-        toast.error("This email is already registered. Please log in instead.");
-        navigate(`/login?next=${encodeURIComponent("/")}`);
-      } else {
-        toast.error(error.message);
-      }
+    if (password.length < 6) {
+      toast.error("Password must be at least 6 characters.");
       return;
     }
-    toast.success("Account created successfully!");
-    navigate("/");
+    const fullName = (name || "").trim() || "User";
+    setSubmitting(true);
+    try {
+      const { error } = await signUp(email, password, fullName);
+      if (error) {
+        if (error.message.toLowerCase().includes("already registered") || error.message.toLowerCase().includes("already exists") || error.message.toLowerCase().includes("log in instead")) {
+          toast.error("This email is already registered. Please log in.");
+          navigate(`/login`);
+        } else {
+          toast.error(error.message);
+        }
+        setSubmitting(false);
+        return;
+      }
+      // Signup succeeded — check if user is now logged in
+      toast.success("Account created successfully!");
+      // Small delay to let auth state propagate
+      setTimeout(() => {
+        navigate("/");
+      }, 500);
+    } catch {
+      toast.error("Something went wrong. Please try again.");
+      setSubmitting(false);
+    }
   };
 
   return (
