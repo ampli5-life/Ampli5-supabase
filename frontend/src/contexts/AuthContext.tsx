@@ -248,25 +248,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         if (data.session) {
           setToken(data.session.access_token);
-          await loadProfile(data.user);
-          return { error: null };
+          // loadProfile in background — don't block
+          loadProfile(data.user).catch(() => { });
         }
-
-        // No session — try auto sign-in
-        if (data.user) {
-          try {
-            const { data: signInData } = await supabase.auth.signInWithPassword({
-              email: trimmedEmail,
-              password,
-            });
-            if (signInData?.session) {
-              setToken(signInData.session.access_token);
-              await loadProfile(signInData.user);
-            }
-          } catch {
-            // Auto sign-in failed, account was created but user will need to log in separately
-          }
-        }
+        // If no session, account created but user needs to log in
+        // The onAuthStateChange listener will handle session setup if it arrives later
         return { error: null };
       } catch (e) {
         return { error: { message: e instanceof Error ? e.message : "Signup failed. Please try again." } };

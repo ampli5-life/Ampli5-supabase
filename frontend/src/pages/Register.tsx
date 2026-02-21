@@ -29,13 +29,13 @@ const Register = () => {
     const fullName = (name || "").trim() || "User";
     setSubmitting(true);
     try {
-      // Add timeout to prevent hanging forever
       const result = await Promise.race([
         signUp(email, password, fullName),
         new Promise<{ error: { message: string } }>((resolve) =>
           setTimeout(() => resolve({ error: { message: "Signup is taking too long. Please try again." } }), 15000)
         ),
       ]);
+      setSubmitting(false);
       if (result.error) {
         if (result.error.message.toLowerCase().includes("already registered") || result.error.message.toLowerCase().includes("already exists") || result.error.message.toLowerCase().includes("log in instead")) {
           toast.error("This email is already registered. Please log in.");
@@ -43,12 +43,10 @@ const Register = () => {
         } else {
           toast.error(result.error.message);
         }
-        setSubmitting(false);
         return;
       }
-      toast.success("Account created successfully!");
-      setSubmitting(false);
-      navigate("/");
+      toast.success("Account created! Please log in.");
+      navigate("/login");
     } catch {
       toast.error("Something went wrong. Please try again.");
       setSubmitting(false);
