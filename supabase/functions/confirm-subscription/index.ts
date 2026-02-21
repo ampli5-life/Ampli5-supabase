@@ -72,7 +72,7 @@ Deno.serve(async (req) => {
       .from("subscriptions")
       .select("id")
       .eq("stripe_subscription_id", subId)
-      .single();
+      .maybeSingle();
 
     if (existing) {
       await supabase
