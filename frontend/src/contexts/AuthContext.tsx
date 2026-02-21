@@ -223,8 +223,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       password: string,
       fullName: string
     ): Promise<{ error: { message: string } | null }> => {
+      const trimmedEmail = email.trim().toLowerCase();
       const { data, error } = await supabase.auth.signUp({
-        email: email.trim().toLowerCase(),
+        email: trimmedEmail,
         password,
         options: { data: { full_name: fullName.trim() || "User" } },
       });
@@ -235,7 +236,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setToken(data.session.access_token);
         await loadProfile(data.user);
       } else if (data.user) {
-        await loadProfile(data.user);
+        // No session means email confirmation is required.
+        // Auto sign-in the user immediately after signup.
+        const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+          email: trimmedEmail,
+          password,
+        });
+        if (signInData?.session) {
+          setToken(signInData.session.access_token);
+          await loadProfile(signInData.user);
+        } else if (!signInError) {
+          await loadProfile(data.user);
+        }
+        // If sign-in also fails (e.g. email not confirmed at Supabase level),
+        // we still return success so the user sees the account was created
       }
       return { error: null };
     },
@@ -249,6 +263,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         password,
       });
       if (error) {
+        // Translate "Email not confirmed" to a friendlier message with guidance
+        if (error.message.toLowerCase().includes("email not confirmed")) {
+          return { error: { message: "Your account is pending. Please contact support or try signing up again." } };
+        }
         return { error: { message: error.message } };
       }
       if (data.session) {
