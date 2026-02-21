@@ -23,10 +23,8 @@ const Footer = () => (
           <h4 className="mb-6 text-sm font-bold">Platform</h4>
           <ul className="space-y-4 text-sm">
             <li><Link to="/free-videos" className="text-current/50 hover:text-[hsl(71,95%,60%)] transition-colors duration-300">Browse Classes</Link></li>
-            <li><Link to="#" className="text-current/50 hover:text-[hsl(71,95%,60%)] transition-colors duration-300">Live Schedule</Link></li>
-            <li><Link to="#" className="text-current/50 hover:text-[hsl(71,95%,60%)] transition-colors duration-300">Instructors</Link></li>
+            <li><Link to="/news" className="text-current/50 hover:text-[hsl(71,95%,60%)] transition-colors duration-300">News & Events</Link></li>
             <li><Link to="/pricing" className="text-current/50 hover:text-[hsl(71,95%,60%)] transition-colors duration-300">Pricing</Link></li>
-            <li><Link to="#" className="text-current/50 hover:text-[hsl(71,95%,60%)] transition-colors duration-300">Gift Cards</Link></li>
           </ul>
         </div>
 
@@ -34,9 +32,7 @@ const Footer = () => (
           <h4 className="mb-6 text-sm font-bold">Company</h4>
           <ul className="space-y-4 text-sm">
             <li><Link to="/about" className="text-current/50 hover:text-[hsl(71,95%,60%)] transition-colors duration-300">About Us</Link></li>
-            <li><Link to="#" className="text-current/50 hover:text-[hsl(71,95%,60%)] transition-colors duration-300">Careers</Link></li>
             <li><Link to="/blog" className="text-current/50 hover:text-[hsl(71,95%,60%)] transition-colors duration-300">Blog</Link></li>
-            <li><Link to="#" className="text-current/50 hover:text-[hsl(71,95%,60%)] transition-colors duration-300">Press</Link></li>
             <li><Link to="/contact" className="text-current/50 hover:text-[hsl(71,95%,60%)] transition-colors duration-300">Contact</Link></li>
           </ul>
         </div>
@@ -64,7 +60,7 @@ const Footer = () => (
         <div className="flex items-center gap-6 mt-4 md:mt-0">
           <Link to="/terms" className="hover:text-current transition-colors duration-300">Terms of Service</Link>
           <Link to="/privacy" className="hover:text-current transition-colors duration-300">Privacy Policy</Link>
-          <Link to="#" className="hover:text-current transition-colors duration-300">Accessibility</Link>
+          <Link to="/refund-policy" className="hover:text-current transition-colors duration-300">Refund Policy</Link>
         </div>
       </div>
     </div>
