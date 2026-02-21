@@ -250,12 +250,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
         // If we got an access_token, set the session
         if (json.access_token) {
-          await supabase.auth.setSession({ access_token: json.access_token, refresh_token: json.refresh_token });
+          // Store token directly — don't await setSession as it can hang
           setToken(json.access_token);
           const quickProfile = profileFromUser({ id: json.user?.id || json.id, email: trimmedEmail } as any, null);
           setUser(quickProfile);
           setProfile(quickProfile);
           persistProfile(quickProfile);
+          // Sync session to Supabase client in background (for future API calls)
+          supabase.auth.setSession({ access_token: json.access_token, refresh_token: json.refresh_token }).catch(() => { });
         }
         return { error: null };
       } catch (e) {
@@ -303,12 +305,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           return { error: { message: msg } };
         }
         if (json.access_token) {
-          await supabase.auth.setSession({ access_token: json.access_token, refresh_token: json.refresh_token });
+          // Store token directly — don't await setSession as it can hang
           setToken(json.access_token);
           const quickProfile = profileFromUser({ id: json.user?.id, email: json.user?.email } as any, null);
           setUser(quickProfile);
           setProfile(quickProfile);
           persistProfile(quickProfile);
+          // Sync session to Supabase client in background
+          supabase.auth.setSession({ access_token: json.access_token, refresh_token: json.refresh_token }).catch(() => { });
           // Load full profile in background
           loadProfile(json.user).catch(() => { });
         }
