@@ -279,14 +279,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
         if (data.session) {
           setToken(data.session.access_token);
-          await loadProfile(data.user);
+          // Set user immediately from auth data so navigation works right away
+          const quickProfile = profileFromUser(data.user, null);
+          setUser(quickProfile);
+          setProfile(quickProfile);
+          persistProfile(quickProfile);
+          // Load full profile in background (enriches with avatar, admin status, etc.)
+          loadProfile(data.user).catch(() => { });
         }
         return { error: null };
       } catch (e) {
         return { error: { message: e instanceof Error ? e.message : "Login failed. Please try again." } };
       }
     },
-    [loadProfile]
+    [loadProfile, persistProfile]
   );
 
   const signInWithGoogle = useCallback(

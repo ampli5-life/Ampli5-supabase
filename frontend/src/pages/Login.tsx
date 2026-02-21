@@ -33,7 +33,7 @@ const Login = () => {
       const result = await Promise.race([
         signIn(email, password),
         new Promise<{ error: { message: string } }>((resolve) =>
-          setTimeout(() => resolve({ error: { message: "Login is taking too long. Please try again." } }), 15000)
+          setTimeout(() => resolve({ error: { message: "Login is taking too long. Please try again." } }), 30000)
         ),
       ]);
       setSubmitting(false);

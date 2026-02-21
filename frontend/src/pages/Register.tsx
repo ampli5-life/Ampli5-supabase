@@ -32,7 +32,7 @@ const Register = () => {
       const result = await Promise.race([
         signUp(email, password, fullName),
         new Promise<{ error: { message: string } }>((resolve) =>
-          setTimeout(() => resolve({ error: { message: "Signup is taking too long. Please try again." } }), 15000)
+          setTimeout(() => resolve({ error: { message: "Signup is taking too long. Please try again." } }), 30000)
         ),
       ]);
       setSubmitting(false);
