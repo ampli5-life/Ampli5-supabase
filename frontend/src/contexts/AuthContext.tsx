@@ -1,19 +1,6 @@
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useState,
-  type ReactNode,
-} from "react";
-import { supabase } from "@/lib/supabase";
-import {
-  getTokenAsync,
-  setToken,
-  TOKEN_KEY,
-  getSubscriptionStatus,
-  type SubscriptionStatus,
-} from "@/lib/api";
+import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
+import { supabase, getSupabaseUrl, getAnonKey } from "@/lib/supabase";
+import { getTokenAsync, setToken, TOKEN_KEY, getSubscriptionStatus, type SubscriptionStatus } from "@/lib/api";
 
 const PROFILE_KEY = "ampli5_profile";
 
@@ -231,64 +218,105 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       fullName: string
     ): Promise<{ error: { message: string } | null }> => {
       const trimmedEmail = email.trim().toLowerCase();
+      const url = getSupabaseUrl();
+      const key = getAnonKey();
+      if (!url || !key) {
+        return { error: { message: "App configuration error. Please contact support." } };
+      }
       try {
-        const { data, error } = await supabase.auth.signUp({
-          email: trimmedEmail,
-          password,
-          options: { data: { full_name: fullName.trim() || "User" } },
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 20000);
+        const res = await fetch(`${url}/auth/v1/signup`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "apikey": key,
+          },
+          body: JSON.stringify({
+            email: trimmedEmail,
+            password,
+            data: { full_name: fullName.trim() || "User" },
+          }),
+          signal: controller.signal,
         });
-        if (error) {
-          return { error: { message: error.message } };
+        clearTimeout(timeoutId);
+        const json = await res.json();
+        if (!res.ok) {
+          return { error: { message: json.msg || json.message || json.error_description || "Signup failed." } };
         }
-
-        // Check if user already existed (Supabase returns fake user with no session & no identities)
-        if (data.user && (!data.user.identities || data.user.identities.length === 0)) {
+        // Check if user already existed (no identities)
+        if (json.identities && json.identities.length === 0) {
           return { error: { message: "This email is already registered. Please log in instead." } };
         }
-
-        if (data.session) {
-          setToken(data.session.access_token);
-          // loadProfile in background — don't block
-          loadProfile(data.user).catch(() => { });
+        // If we got an access_token, set the session
+        if (json.access_token) {
+          await supabase.auth.setSession({ access_token: json.access_token, refresh_token: json.refresh_token });
+          setToken(json.access_token);
+          const quickProfile = profileFromUser({ id: json.user?.id || json.id, email: trimmedEmail } as any, null);
+          setUser(quickProfile);
+          setProfile(quickProfile);
+          persistProfile(quickProfile);
         }
-        // If no session, account created but user needs to log in
-        // The onAuthStateChange listener will handle session setup if it arrives later
         return { error: null };
       } catch (e) {
+        if (e instanceof DOMException && e.name === "AbortError") {
+          return { error: { message: "Signup timed out. Please try again." } };
+        }
         return { error: { message: e instanceof Error ? e.message : "Signup failed. Please try again." } };
       }
     },
-    [loadProfile]
+    [persistProfile]
   );
 
   const signIn = useCallback(
     async (email: string, password: string): Promise<{ error: { message: string } | null }> => {
+      const url = getSupabaseUrl();
+      const key = getAnonKey();
+      if (!url || !key) {
+        return { error: { message: "App configuration error. Please contact support." } };
+      }
       try {
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email: email.trim().toLowerCase(),
-          password,
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 20000);
+        const res = await fetch(`${url}/auth/v1/token?grant_type=password`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "apikey": key,
+          },
+          body: JSON.stringify({
+            email: email.trim().toLowerCase(),
+            password,
+          }),
+          signal: controller.signal,
         });
-        if (error) {
-          if (error.message.toLowerCase().includes("email not confirmed")) {
-            return { error: { message: "Your account is pending. Please contact support or try signing up again." } };
+        clearTimeout(timeoutId);
+        const json = await res.json();
+        if (!res.ok) {
+          const msg = json.msg || json.message || json.error_description || "Login failed.";
+          if (msg.toLowerCase().includes("email not confirmed")) {
+            return { error: { message: "Your email is not confirmed. Please contact support." } };
           }
-          if (error.message.toLowerCase().includes("invalid login")) {
+          if (msg.toLowerCase().includes("invalid")) {
             return { error: { message: "Invalid email or password. Please try again." } };
           }
-          return { error: { message: error.message } };
+          return { error: { message: msg } };
         }
-        if (data.session) {
-          setToken(data.session.access_token);
-          // Set user immediately from auth data so navigation works right away
-          const quickProfile = profileFromUser(data.user, null);
+        if (json.access_token) {
+          await supabase.auth.setSession({ access_token: json.access_token, refresh_token: json.refresh_token });
+          setToken(json.access_token);
+          const quickProfile = profileFromUser({ id: json.user?.id, email: json.user?.email } as any, null);
           setUser(quickProfile);
           setProfile(quickProfile);
           persistProfile(quickProfile);
-          // Load full profile in background (enriches with avatar, admin status, etc.)
-          loadProfile(data.user).catch(() => { });
+          // Load full profile in background
+          loadProfile(json.user).catch(() => { });
         }
         return { error: null };
       } catch (e) {
+        if (e instanceof DOMException && e.name === "AbortError") {
+          return { error: { message: "Login timed out. Please try again." } };
+        }
         return { error: { message: e instanceof Error ? e.message : "Login failed. Please try again." } };
       }
     },
