@@ -100,16 +100,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const loadProfile = useCallback(
     async (authUser: { id: string; email?: string; user_metadata?: Record<string, unknown> }) => {
-      const { data: profileRow } = await supabase
-        .from("profiles")
-        .select("full_name, avatar_url, is_admin")
-        .eq("id", authUser.id)
-        .maybeSingle();
+      let profileRow = null;
+      try {
+        const { data } = await supabase
+          .from("profiles")
+          .select("full_name, avatar_url, is_admin")
+          .eq("id", authUser.id)
+          .maybeSingle();
+        profileRow = data;
+      } catch {
+        // Profile query failed — proceed with user metadata only
+      }
       const p = profileFromUser(authUser, profileRow);
       setUser(p);
       setProfile(p);
       persistProfile(p);
-      await refreshSubscription();
+      // Refresh subscription in background — don't block login
+      refreshSubscription().catch(() => { });
     },
     [persistProfile, refreshSubscription]
   );
@@ -270,22 +277,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signIn = useCallback(
     async (email: string, password: string): Promise<{ error: { message: string } | null }> => {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: email.trim().toLowerCase(),
-        password,
-      });
-      if (error) {
-        // Translate "Email not confirmed" to a friendlier message with guidance
-        if (error.message.toLowerCase().includes("email not confirmed")) {
-          return { error: { message: "Your account is pending. Please contact support or try signing up again." } };
+      try {
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email: email.trim().toLowerCase(),
+          password,
+        });
+        if (error) {
+          if (error.message.toLowerCase().includes("email not confirmed")) {
+            return { error: { message: "Your account is pending. Please contact support or try signing up again." } };
+          }
+          if (error.message.toLowerCase().includes("invalid login")) {
+            return { error: { message: "Invalid email or password. Please try again." } };
+          }
+          return { error: { message: error.message } };
         }
-        return { error: { message: error.message } };
+        if (data.session) {
+          setToken(data.session.access_token);
+          await loadProfile(data.user);
+        }
+        return { error: null };
+      } catch (e) {
+        return { error: { message: e instanceof Error ? e.message : "Login failed. Please try again." } };
       }
-      if (data.session) {
-        setToken(data.session.access_token);
-        await loadProfile(data.user);
-      }
-      return { error: null };
     },
     [loadProfile]
   );

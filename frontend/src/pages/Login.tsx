@@ -29,14 +29,19 @@ const Login = () => {
       return;
     }
     setSubmitting(true);
-    const { error } = await signIn(email, password);
-    setSubmitting(false);
-    if (error) {
-      toast.error(error.message);
-      return;
+    try {
+      const { error } = await signIn(email, password);
+      setSubmitting(false);
+      if (error) {
+        toast.error(error.message);
+        return;
+      }
+      toast.success("Welcome back!");
+      navigate(from);
+    } catch {
+      setSubmitting(false);
+      toast.error("Something went wrong. Please try again.");
     }
-    toast.success("Welcome back!");
-    navigate(from);
   };
 
   return (
