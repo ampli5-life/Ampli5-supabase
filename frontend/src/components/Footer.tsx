@@ -1,69 +1,70 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { ArrowRight } from "lucide-react";
 
 const Footer = () => (
-  <footer className="bg-[#0B1E14] text-white pt-20 pb-10">
-    <div className="container max-w-7xl mx-auto px-4">
+  <footer className="bg-primary dark:bg-card border-t border-border/10 pt-20 pb-10 text-primary-foreground dark:text-foreground">
+    <div className="max-w-7xl mx-auto px-6">
       <div className="grid gap-12 md:grid-cols-4 lg:grid-cols-5 mb-16">
         <div className="lg:col-span-2">
-          <Link to="/" className="inline-flex items-center gap-2 mb-6 group">
-            <span className="font-serif text-3xl font-bold tracking-tight text-white group-hover:text-white/90 transition-colors">
+          <Link to="/" className="inline-flex items-center gap-1 mb-6 group">
+            <span className="font-serif text-3xl font-bold tracking-tight">
               Ampli5
             </span>
-            <span className="text-secondary text-3xl leading-none -ml-1">.</span>
+            <span className="text-[hsl(71,95%,60%)] text-3xl font-bold leading-none transition-transform group-hover:scale-125 group-hover:rotate-12 duration-300">.</span>
           </Link>
-          <p className="text-white/60 text-sm leading-relaxed max-w-sm">
+          <p className="text-current/60 text-sm leading-relaxed max-w-sm">
             Empowering you to live a healthier, more mindful life through accessible yoga and wellness practices.
           </p>
         </div>
 
         <div>
-          <h4 className="mb-6 font-sans text-sm font-semibold text-white">Platform</h4>
+          <h4 className="mb-6 text-sm font-bold">Platform</h4>
           <ul className="space-y-4 text-sm">
-            <li><Link to="/free-videos" className="text-white/60 hover:text-secondary transition-colors">Browse Classes</Link></li>
-            <li><Link to="#" className="text-white/60 hover:text-secondary transition-colors">Live Schedule</Link></li>
-            <li><Link to="#" className="text-white/60 hover:text-secondary transition-colors">Instructors</Link></li>
-            <li><Link to="/pricing" className="text-white/60 hover:text-secondary transition-colors">Pricing</Link></li>
-            <li><Link to="#" className="text-white/60 hover:text-secondary transition-colors">Gift Cards</Link></li>
+            <li><Link to="/free-videos" className="text-current/50 hover:text-[hsl(71,95%,60%)] transition-colors duration-300">Browse Classes</Link></li>
+            <li><Link to="#" className="text-current/50 hover:text-[hsl(71,95%,60%)] transition-colors duration-300">Live Schedule</Link></li>
+            <li><Link to="#" className="text-current/50 hover:text-[hsl(71,95%,60%)] transition-colors duration-300">Instructors</Link></li>
+            <li><Link to="/pricing" className="text-current/50 hover:text-[hsl(71,95%,60%)] transition-colors duration-300">Pricing</Link></li>
+            <li><Link to="#" className="text-current/50 hover:text-[hsl(71,95%,60%)] transition-colors duration-300">Gift Cards</Link></li>
           </ul>
         </div>
 
         <div>
-          <h4 className="mb-6 font-sans text-sm font-semibold text-white">Company</h4>
+          <h4 className="mb-6 text-sm font-bold">Company</h4>
           <ul className="space-y-4 text-sm">
-            <li><Link to="/about" className="text-white/60 hover:text-secondary transition-colors">About Us</Link></li>
-            <li><Link to="#" className="text-white/60 hover:text-secondary transition-colors">Careers</Link></li>
-            <li><Link to="/blog" className="text-white/60 hover:text-secondary transition-colors">Blog</Link></li>
-            <li><Link to="#" className="text-white/60 hover:text-secondary transition-colors">Press</Link></li>
-            <li><Link to="/contact" className="text-white/60 hover:text-secondary transition-colors">Contact</Link></li>
+            <li><Link to="/about" className="text-current/50 hover:text-[hsl(71,95%,60%)] transition-colors duration-300">About Us</Link></li>
+            <li><Link to="#" className="text-current/50 hover:text-[hsl(71,95%,60%)] transition-colors duration-300">Careers</Link></li>
+            <li><Link to="/blog" className="text-current/50 hover:text-[hsl(71,95%,60%)] transition-colors duration-300">Blog</Link></li>
+            <li><Link to="#" className="text-current/50 hover:text-[hsl(71,95%,60%)] transition-colors duration-300">Press</Link></li>
+            <li><Link to="/contact" className="text-current/50 hover:text-[hsl(71,95%,60%)] transition-colors duration-300">Contact</Link></li>
           </ul>
         </div>
 
         <div className="lg:col-span-1">
-          <h4 className="mb-6 font-sans text-sm font-semibold text-white">Newsletter</h4>
-          <p className="text-white/60 text-sm mb-4 leading-relaxed">
+          <h4 className="mb-6 text-sm font-bold">Newsletter</h4>
+          <p className="text-current/50 text-sm mb-4 leading-relaxed">
             Subscribe for weekly wellness tips and updates.
           </p>
           <div className="flex flex-col gap-3">
             <Input
               type="email"
               placeholder="Email address"
-              className="bg-white/5 border-white/10 text-white placeholder:text-white/40 focus:border-secondary/50 focus:ring-secondary/50 rounded-lg h-12"
+              className="bg-white/5 border-white/10 text-current placeholder:text-current/30 focus:border-[hsl(71,95%,60%)]/50 focus:ring-[hsl(71,95%,60%)]/50 rounded-full h-12 px-5"
             />
-            <Button className="w-full bg-secondary text-primary hover:bg-secondary/90 font-bold rounded-lg h-12 transition-transform active:scale-95">
-              Subscribe
+            <Button className="w-full bg-[hsl(71,95%,60%)] text-[hsl(155,40%,12%)] hover:bg-[hsl(71,95%,55%)] font-bold rounded-full h-12 transition-all duration-300 active:scale-95 hover:shadow-md">
+              Subscribe <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           </div>
         </div>
       </div>
 
-      <div className="flex flex-col md:flex-row items-center justify-between border-t border-white/10 pt-8 text-sm text-white/40">
+      <div className="flex flex-col md:flex-row items-center justify-between border-t border-current/10 pt-8 text-sm text-current/35">
         <p>© {new Date().getFullYear()} Ampli5. All rights reserved.</p>
         <div className="flex items-center gap-6 mt-4 md:mt-0">
-          <Link to="/terms" className="hover:text-white transition-colors">Terms of Service</Link>
-          <Link to="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link>
-          <Link to="#" className="hover:text-white transition-colors">Accessibility</Link>
+          <Link to="/terms" className="hover:text-current transition-colors duration-300">Terms of Service</Link>
+          <Link to="/privacy" className="hover:text-current transition-colors duration-300">Privacy Policy</Link>
+          <Link to="#" className="hover:text-current transition-colors duration-300">Accessibility</Link>
         </div>
       </div>
     </div>
