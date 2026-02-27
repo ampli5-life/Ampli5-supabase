@@ -69,7 +69,7 @@ const News = () => {
       {/* Hero Header */}
       <section className="relative pt-32 pb-20 overflow-hidden">
         <div className="absolute inset-0 bg-primary dark:bg-card" />
-        <div className="absolute top-0 right-0 w-96 h-96 bg-[hsl(221,83%,53%)]/5 rounded-full blur-[120px]" />
+        <div className="absolute top-0 right-0 w-96 h-96 bg-[hsl(199,89%,48%)]/5 rounded-full blur-[120px]" />
         <div className="absolute bottom-0 left-0 w-80 h-80 bg-white/3 rounded-full blur-[100px]" />
 
         <div className="max-w-7xl mx-auto px-6 relative z-10 text-center">
@@ -103,8 +103,8 @@ const News = () => {
                 transition={{ duration: 0.5, delay: 0.2 }}
                 className="flex items-center gap-3 mb-8"
               >
-                <div className="w-10 h-10 rounded-xl bg-[hsl(221,83%,53%)]/15 flex items-center justify-center">
-                  <CalendarDays className="h-5 w-5 text-[hsl(221,83%,53%)] dark:text-primary" />
+                <div className="w-10 h-10 rounded-xl bg-[hsl(199,89%,48%)]/15 flex items-center justify-center">
+                  <CalendarDays className="h-5 w-5 text-[hsl(199,89%,48%)] dark:text-primary" />
                 </div>
                 <h2 className="font-serif text-2xl font-bold">Upcoming Events</h2>
               </motion.div>
@@ -154,8 +154,8 @@ const News = () => {
                 transition={{ duration: 0.5, delay: 0.3 }}
                 className="flex items-center gap-3 mb-8"
               >
-                <div className="w-10 h-10 rounded-xl bg-[hsl(221,83%,53%)]/15 flex items-center justify-center">
-                  <Calendar className="h-5 w-5 text-[hsl(221,83%,53%)] dark:text-primary" />
+                <div className="w-10 h-10 rounded-xl bg-[hsl(199,89%,48%)]/15 flex items-center justify-center">
+                  <Calendar className="h-5 w-5 text-[hsl(199,89%,48%)] dark:text-primary" />
                 </div>
                 <h2 className="font-serif text-2xl font-bold">Scheduled Classes</h2>
               </motion.div>

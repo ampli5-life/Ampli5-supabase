@@ -139,7 +139,7 @@ const Index = () => {
         </motion.div>
 
         {/* Floating accent orbs */}
-        <div className="absolute top-1/4 left-[10%] w-72 h-72 bg-[hsl(221,83%,53%)]/10 rounded-full blur-[120px] animate-float" />
+        <div className="absolute top-1/4 left-[10%] w-72 h-72 bg-[hsl(199,89%,48%)]/10 rounded-full blur-[120px] animate-float" />
         <div className="absolute bottom-1/4 right-[10%] w-96 h-96 bg-primary/10 rounded-full blur-[120px] animate-float" style={{ animationDelay: "3s" }} />
 
         <div className="relative z-10 w-full max-w-6xl mx-auto px-6 text-center pt-32 pb-20">
@@ -150,7 +150,7 @@ const Index = () => {
             className="inline-flex items-center gap-3 mb-10"
           >
             <span className="flex items-center gap-2 uppercase tracking-[0.25em] text-xs font-semibold text-white/80 border border-white/20 rounded-full px-5 py-2.5 backdrop-blur-md bg-white/5">
-              <Sparkles className="h-3.5 w-3.5 text-[hsl(221,83%,53%)]" />
+              <Sparkles className="h-3.5 w-3.5 text-[hsl(199,89%,48%)]" />
               NEW: ADVANCED VINYASA SERIES
             </span>
           </motion.div>
@@ -163,7 +163,7 @@ const Index = () => {
           >
             Amplify Your Life
             <br />
-            <span className="text-[hsl(221,83%,53%)] italic">Through Yoga</span>
+            <span className="text-[hsl(199,89%,48%)] italic">Through Yoga</span>
           </motion.h1>
 
           <motion.p
@@ -182,7 +182,7 @@ const Index = () => {
             className="flex flex-col sm:flex-row items-center justify-center gap-4"
           >
             <Link to="/pricing">
-              <Button size="lg" className="rounded-full bg-[hsl(221,83%,53%)] text-[hsl(222,47%,12%)] hover:bg-[hsl(221,83%,48%)] px-10 h-14 text-base font-bold transition-all duration-300 hover:scale-105 active:scale-95 shadow-[0_0_40px_rgba(59,130,246,0.25)]">
+              <Button size="lg" className="rounded-full bg-[hsl(199,89%,48%)] text-[hsl(222,47%,12%)] hover:bg-[hsl(199,89%,43%)] px-10 h-14 text-base font-bold transition-all duration-300 hover:scale-105 active:scale-95 shadow-[0_0_40px_rgba(14,165,233,0.25)]">
                 Start Free Trial
               </Button>
             </Link>
@@ -214,7 +214,7 @@ const Index = () => {
       {/* ===== VIDEO LIBRARY ===== */}
       <section className="py-28 px-6 relative">
         {/* Decorative blur */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-[hsl(221,83%,53%)]/5 rounded-full blur-[150px] pointer-events-none" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-[hsl(199,89%,48%)]/5 rounded-full blur-[150px] pointer-events-none" />
 
         <div className="max-w-7xl mx-auto relative z-10">
           <motion.div
@@ -222,7 +222,7 @@ const Index = () => {
             variants={staggerContainer}
             className="text-center mb-16"
           >
-            <motion.span variants={fadeUp} custom={0} className="text-[hsl(221,83%,53%)] dark:text-primary text-xs font-bold tracking-[0.3em] uppercase block mb-4">
+            <motion.span variants={fadeUp} custom={0} className="text-[hsl(199,89%,48%)] dark:text-primary text-xs font-bold tracking-[0.3em] uppercase block mb-4">
               CURATED FOR YOU
             </motion.span>
             <motion.h2 variants={fadeUp} custom={1} className="font-serif text-4xl md:text-6xl font-bold">
@@ -313,7 +313,7 @@ const Index = () => {
                             opacity: hoveredVideo === video.id ? 1 : 0,
                           }}
                           transition={{ duration: 0.3, ease: "easeOut" }}
-                          className="w-16 h-16 rounded-full bg-[hsl(221,83%,53%)]/90 flex items-center justify-center shadow-2xl backdrop-blur-sm"
+                          className="w-16 h-16 rounded-full bg-[hsl(199,89%,48%)]/90 flex items-center justify-center shadow-2xl backdrop-blur-sm"
                         >
                           <Play className="h-6 w-6 text-[hsl(222,47%,12%)] ml-0.5 fill-current" />
                         </motion.div>
@@ -323,7 +323,7 @@ const Index = () => {
                     {/* Card info */}
                     <div className="px-1">
                       <div className="flex justify-between items-center mb-2">
-                        <span className="text-[hsl(221,83%,53%)] dark:text-primary font-bold text-[11px] tracking-[0.2em] uppercase">
+                        <span className="text-[hsl(199,89%,48%)] dark:text-primary font-bold text-[11px] tracking-[0.2em] uppercase">
                           VINYASA FLOW
                         </span>
                         <button
@@ -353,7 +353,7 @@ const Index = () => {
 
       {/* ===== HOW IT WORKS ===== */}
       <section className="py-28 bg-primary dark:bg-card text-primary-foreground dark:text-foreground relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[hsl(221,83%,53%)]/5 rounded-full blur-[150px] -translate-y-1/2 translate-x-1/3" />
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[hsl(199,89%,48%)]/5 rounded-full blur-[150px] -translate-y-1/2 translate-x-1/3" />
         <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-white/3 rounded-full blur-[120px] translate-y-1/2 -translate-x-1/3" />
 
         <div className="max-w-6xl mx-auto px-6 relative z-10">
@@ -362,7 +362,7 @@ const Index = () => {
             variants={staggerContainer}
             className="text-center mb-20"
           >
-            <motion.span variants={fadeUp} custom={0} className="uppercase tracking-[0.3em] text-[hsl(221,83%,53%)] dark:text-primary text-xs font-bold mb-4 block">
+            <motion.span variants={fadeUp} custom={0} className="uppercase tracking-[0.3em] text-[hsl(199,89%,48%)] dark:text-primary text-xs font-bold mb-4 block">
               SIMPLE PROCESS
             </motion.span>
             <motion.h2 variants={fadeUp} custom={1} className="font-serif text-4xl md:text-6xl font-bold">
@@ -387,7 +387,7 @@ const Index = () => {
               >
                 <div className={`w-20 h-20 rounded-full flex items-center justify-center text-2xl font-bold mb-8 transition-all duration-500
                   ${step.active
-                    ? 'border-2 border-[hsl(221,83%,53%)] text-[hsl(221,83%,53%)] bg-[hsl(221,83%,53%)]/10 shadow-[0_0_40px_rgba(59,130,246,0.2)] group-hover:shadow-[0_0_60px_rgba(59,130,246,0.35)]'
+                    ? 'border-2 border-[hsl(199,89%,48%)] text-[hsl(199,89%,48%)] bg-[hsl(199,89%,48%)]/10 shadow-[0_0_40px_rgba(14,165,233,0.2)] group-hover:shadow-[0_0_60px_rgba(14,165,233,0.35)]'
                     : 'border border-current/20 text-current/40 bg-current/5 group-hover:border-current/40 group-hover:text-current/60'
                   }`}
                 >
@@ -409,7 +409,7 @@ const Index = () => {
             variants={staggerContainer}
             className="text-center mb-16"
           >
-            <motion.span variants={fadeUp} custom={0} className="text-[hsl(221,83%,53%)] dark:text-primary text-xs font-bold tracking-[0.3em] uppercase block mb-4">
+            <motion.span variants={fadeUp} custom={0} className="text-[hsl(199,89%,48%)] dark:text-primary text-xs font-bold tracking-[0.3em] uppercase block mb-4">
               TESTIMONIALS
             </motion.span>
             <motion.h2 variants={fadeUp} custom={1} className="font-serif text-4xl md:text-6xl font-bold">
@@ -434,7 +434,7 @@ const Index = () => {
                     {/* Stars */}
                     <div className="flex gap-0.5 mb-6">
                       {[1, 2, 3, 4, 5].map((s) => (
-                        <Star key={s} className="h-4 w-4 fill-[hsl(221,83%,53%)] text-[hsl(221,83%,53%)]" />
+                        <Star key={s} className="h-4 w-4 fill-[hsl(199,89%,48%)] text-[hsl(199,89%,48%)]" />
                       ))}
                     </div>
                     <p className="text-foreground/75 italic relative z-10 min-h-[100px] leading-relaxed">
@@ -466,7 +466,7 @@ const Index = () => {
             className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6"
           >
             <div>
-              <motion.span variants={fadeUp} custom={0} className="text-[hsl(221,83%,53%)] dark:text-primary text-xs font-bold tracking-[0.3em] uppercase block mb-4">
+              <motion.span variants={fadeUp} custom={0} className="text-[hsl(199,89%,48%)] dark:text-primary text-xs font-bold tracking-[0.3em] uppercase block mb-4">
                 INSIGHTS
               </motion.span>
               <motion.h2 variants={fadeUp} custom={1} className="font-serif text-4xl md:text-5xl font-bold">
@@ -524,7 +524,7 @@ const Index = () => {
       {/* ===== CTA ===== */}
       <section className="py-32 relative overflow-hidden">
         <div className="absolute inset-0 bg-primary dark:bg-card" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full bg-[hsl(221,83%,53%)]/5 blur-[200px]" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full bg-[hsl(199,89%,48%)]/5 blur-[200px]" />
 
         <div className="max-w-4xl mx-auto px-6 relative z-10 text-center text-primary-foreground dark:text-foreground">
           <motion.h2
@@ -555,7 +555,7 @@ const Index = () => {
             className="flex flex-col sm:flex-row items-center justify-center gap-4"
           >
             <Link to="/pricing">
-              <Button size="lg" className="rounded-full bg-[hsl(221,83%,53%)] text-[hsl(222,47%,12%)] hover:bg-[hsl(221,83%,48%)] px-10 h-14 text-base font-bold shadow-[0_0_40px_rgba(59,130,246,0.25)] hover:shadow-[0_0_60px_rgba(59,130,246,0.4)] transition-all duration-300 hover:scale-105 active:scale-95">
+              <Button size="lg" className="rounded-full bg-[hsl(199,89%,48%)] text-[hsl(222,47%,12%)] hover:bg-[hsl(199,89%,43%)] px-10 h-14 text-base font-bold shadow-[0_0_40px_rgba(14,165,233,0.25)] hover:shadow-[0_0_60px_rgba(14,165,233,0.4)] transition-all duration-300 hover:scale-105 active:scale-95">
                 View Pricing Plans
               </Button>
             </Link>

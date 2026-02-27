@@ -133,7 +133,7 @@ const Navbar = () => {
             profile ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button className="rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(221,83%,53%)] ring-offset-2 ring-offset-background transition-transform hover:scale-105 active:scale-95">
+                  <button className="rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(199,89%,48%)] ring-offset-2 ring-offset-background transition-transform hover:scale-105 active:scale-95">
                     <Avatar className={`h-10 w-10 border-2 transition-colors ${isTransparent ? 'border-white/20' : 'border-border'}`}>
                       <AvatarFallback className="bg-primary text-primary-foreground font-bold text-sm">
                         {getInitials(profile.full_name, profile.email)}
@@ -163,7 +163,7 @@ const Navbar = () => {
                 <Button variant="ghost" asChild className={`font-semibold rounded-full px-5 text-[13px] transition-all duration-300 ${isTransparent ? 'text-white hover:bg-white/10 hover:text-white' : 'text-foreground/70 hover:bg-muted hover:text-foreground'}`}>
                   <Link to="/login">Log In</Link>
                 </Button>
-                <Button asChild className="rounded-full font-bold px-6 text-[13px] bg-[hsl(221,83%,53%)] text-[hsl(222,47%,12%)] hover:bg-[hsl(221,83%,48%)] shadow-sm hover:shadow-md transition-all duration-300 hover:scale-105 active:scale-95">
+                <Button asChild className="rounded-full font-bold px-6 text-[13px] bg-[hsl(199,89%,48%)] text-[hsl(222,47%,12%)] hover:bg-[hsl(199,89%,43%)] shadow-sm hover:shadow-md transition-all duration-300 hover:scale-105 active:scale-95">
                   <Link to="/register">Sign Up</Link>
                 </Button>
               </>
@@ -246,7 +246,7 @@ const Navbar = () => {
                   <Button variant="outline" asChild className="w-full rounded-full h-12 font-bold">
                     <Link to="/login" onClick={() => setMobileOpen(false)}>Log In</Link>
                   </Button>
-                  <Button asChild className="w-full rounded-full h-12 font-bold bg-[hsl(221,83%,53%)] text-[hsl(222,47%,12%)] hover:bg-[hsl(221,83%,48%)]">
+                  <Button asChild className="w-full rounded-full h-12 font-bold bg-[hsl(199,89%,48%)] text-[hsl(222,47%,12%)] hover:bg-[hsl(199,89%,43%)]">
                     <Link to="/register" onClick={() => setMobileOpen(false)}>Sign Up</Link>
                   </Button>
                 </>
