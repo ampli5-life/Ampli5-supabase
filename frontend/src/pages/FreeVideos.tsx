@@ -96,189 +96,194 @@ const FreeVideos = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pb-20 pt-20">
       {/* Hero Header */}
-      <section className="relative pt-32 pb-20 overflow-hidden">
-        <div className="absolute inset-0 bg-primary dark:bg-card" />
-        <div className="absolute top-0 right-0 w-96 h-96 bg-[hsl(71,95%,60%)]/5 rounded-full blur-[120px]" />
-        <div className="absolute bottom-0 left-0 w-80 h-80 bg-white/3 rounded-full blur-[100px]" />
+      <section className="relative overflow-hidden bg-slate-900 py-20 lg:py-28 shadow-2xl">
+        {/* Animated background elements */}
+        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-primary/10 blur-[150px] rounded-full -translate-y-1/2 translate-x-1/2 opacity-50" />
+        <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-blue-500/10 blur-[120px] rounded-full translate-y-1/2 -translate-x-1/2 opacity-50" />
 
         <div className="max-w-7xl mx-auto px-6 relative z-10 text-center">
-          <motion.h1
+          <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            className="font-serif text-4xl md:text-6xl font-bold text-primary-foreground dark:text-foreground mb-4"
+            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
           >
-            Video Library
-          </motion.h1>
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.15 }}
-            className="text-primary-foreground/70 dark:text-foreground/60 text-lg max-w-xl mx-auto"
-          >
-            Explore our collection of yoga classes and resources — free and premium.
-          </motion.p>
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-[10px] uppercase font-bold tracking-widest mb-6">
+              <Play className="h-3 w-3 fill-current" />
+              Experience Wellness
+            </div>
+            <h1 className="font-serif text-5xl md:text-7xl font-bold text-white tracking-tight leading-tight mb-6">
+              Our Video <span className="text-primary italic">Library</span>
+            </h1>
+            <p className="text-slate-400 text-lg md:text-xl max-w-2xl mx-auto font-light leading-relaxed">
+              From invigorating flows to deep meditations. Explore our curated collection
+              designed to support your journey at every stage.
+            </p>
+          </motion.div>
         </div>
       </section>
 
-      <section className="py-12 px-6">
+      <section className="py-16 px-6">
         <div className="max-w-7xl mx-auto">
-          {/* Search & Filters */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.3 }}
-            className="mb-10 flex flex-col gap-5 md:flex-row md:items-center"
-          >
-            <div className="relative flex-1 max-w-md">
-              <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                placeholder="Search videos..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="pl-11 h-12 rounded-full border-border/50 bg-muted/50 focus:bg-background transition-colors"
-              />
-            </div>
-            <div className="flex flex-wrap gap-2 items-center">
-              <Filter className="h-4 w-4 text-muted-foreground hidden md:block" />
-              {filterOptions.map((cat) => (
-                <button
-                  key={cat}
-                  onClick={() => setSelectedCategory(cat)}
-                  className={`relative px-4 py-2 rounded-full text-sm font-semibold transition-all duration-300
-                    ${selectedCategory.toLowerCase() === cat.toLowerCase()
-                      ? 'bg-primary text-primary-foreground shadow-md'
-                      : 'bg-muted text-muted-foreground hover:text-foreground hover:bg-muted/80'
-                    }`}
-                >
-                  {cat}
-                </button>
-              ))}
-            </div>
-          </motion.div>
+          {/* Search & Filters sticky header */}
+          <div className="sticky top-20 z-30 bg-background/95 backdrop-blur-md py-4 mb-12 -mx-6 px-6 border-b border-border/40">
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="flex flex-col xl:flex-row gap-6 items-center justify-between"
+            >
+              <div className="relative w-full xl:max-w-md group">
+                <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                <Input
+                  placeholder="Find a session (e.g., 'Morning Flow', 'Vinyasa')..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="pl-11 h-14 rounded-2xl border-border/50 bg-muted/30 focus:bg-background focus:ring-2 focus:ring-primary/20 transition-all text-base shadow-sm"
+                />
+              </div>
+
+              <div className="flex flex-wrap gap-2 items-center justify-center">
+                <div className="h-10 px-3 flex items-center gap-2 border-r border-border mr-2 hidden lg:flex">
+                  <Filter className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Filter</span>
+                </div>
+                {filterOptions.map((cat) => (
+                  <button
+                    key={cat}
+                    onClick={() => setSelectedCategory(cat)}
+                    className={`relative px-5 py-2.5 rounded-xl text-sm font-bold tracking-tight transition-all duration-300
+                      ${selectedCategory.toLowerCase() === cat.toLowerCase()
+                        ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/20 scale-105'
+                        : 'bg-muted/50 text-muted-foreground hover:text-foreground hover:bg-muted border border-transparent hover:border-border/50'
+                      }`}
+                  >
+                    {cat}
+                  </button>
+                ))}
+              </div>
+            </motion.div>
+          </div>
 
           {loading ? (
-            <div className="flex justify-center py-24">
+            <div className="flex flex-col items-center justify-center py-40 gap-4">
               <div className="relative">
-                <div className="h-12 w-12 animate-spin rounded-full border-[3px] border-muted border-t-primary" />
-                <div className="absolute inset-0 h-12 w-12 animate-ping rounded-full border border-primary/20" />
+                <div className="h-16 w-16 animate-spin rounded-full border-4 border-muted border-t-primary shadow-inner" />
+                <div className="absolute inset-0 h-16 w-16 animate-ping rounded-full border-2 border-primary/20" />
               </div>
+              <p className="text-muted-foreground font-medium animate-pulse">Curating your sessions...</p>
             </div>
           ) : (
             <>
-              <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-3">
                 <AnimatePresence mode="popLayout">
                   {filtered.map((video, idx) => {
                     const thumb = getThumb(video);
+                    const videoIsPaid = isPaid(video);
                     return (
                       <motion.div
                         key={video.id}
                         layout
-                        initial={{ opacity: 0, y: 30, scale: 0.97 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        initial={{ opacity: 0, y: 40 }}
+                        animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.95 }}
-                        transition={{ duration: 0.5, delay: Math.min(idx * 0.05, 0.3), ease: [0.16, 1, 0.3, 1] }}
+                        transition={{ duration: 0.6, delay: Math.min(idx * 0.08, 0.4), ease: [0.16, 1, 0.3, 1] }}
                       >
                         <Link
                           to={`/free-videos/${video.id}`}
                           state={{ video }}
-                          className="block group"
+                          className="block group h-full"
                           onMouseEnter={() => setHoveredId(video.id)}
                           onMouseLeave={() => setHoveredId(null)}
                         >
-                          {/* Card */}
-                          <div className="rounded-2xl overflow-hidden border border-border/50 bg-card card-hover">
-                            {/* Thumbnail */}
-                            <div className="relative aspect-video overflow-hidden bg-muted">
+                          <div className="relative flex flex-col h-full rounded-2xl overflow-hidden bg-card border border-border/40 transition-all duration-500 hover:shadow-2xl hover:shadow-primary/5 hover:border-primary/20 group-hover:-translate-y-2">
+                            {/* Thumbnail Container */}
+                            <div className="relative aspect-video overflow-hidden bg-slate-900">
                               {!thumb.isPlaceholder && thumb.url ? (
                                 <img
                                   src={thumb.url}
                                   alt={video.title}
-                                  className="h-full w-full object-cover transition-all duration-700 group-hover:scale-110 group-hover:brightness-75"
+                                  className="h-full w-full object-cover transition-all duration-1000 group-hover:scale-110 group-hover:brightness-50"
                                   loading="lazy"
                                 />
                               ) : (
-                                <div className={`h-full w-full bg-gradient-to-br ${placeholderGradient(video.title)} flex flex-col items-center justify-center transition-transform duration-500 group-hover:scale-105`}>
-                                  <Play className="h-12 w-12 text-white/80 mb-2" />
-                                  <span className="text-white/90 text-sm font-medium px-4 text-center line-clamp-2">{video.title}</span>
+                                <div className={`h-full w-full bg-gradient-to-br ${placeholderGradient(video.title)} flex flex-col items-center justify-center transition-transform duration-700 group-hover:scale-110`}>
+                                  <Play className="h-14 w-14 text-white/50 mb-2" />
                                 </div>
                               )}
 
-                              {/* Gradient overlay */}
-                              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                              {/* Overlays */}
+                              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-60 group-hover:opacity-100 transition-opacity duration-500" />
 
-                              {/* Play button overlay */}
-                              <div className="absolute inset-0 flex items-center justify-center">
+                              {/* Hover Play Button */}
+                              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                                 <motion.div
                                   initial={false}
                                   animate={{
-                                    scale: hoveredId === video.id ? 1 : 0.5,
+                                    scale: hoveredId === video.id ? 1 : 0.6,
                                     opacity: hoveredId === video.id ? 1 : 0,
                                   }}
-                                  transition={{ duration: 0.3 }}
-                                  className="w-14 h-14 rounded-full bg-[hsl(71,95%,60%)]/90 flex items-center justify-center shadow-2xl backdrop-blur-sm"
+                                  className="w-16 h-16 rounded-full bg-primary flex items-center justify-center text-primary-foreground shadow-2xl"
                                 >
-                                  <Play className="h-5 w-5 text-[hsl(155,40%,12%)] ml-0.5 fill-current" />
+                                  <Play className="h-6 w-6 fill-current ml-1" />
                                 </motion.div>
                               </div>
 
-                              {/* Paid badge */}
-                              {isPaid(video) && !isSubscribed && (
-                                <div className="absolute left-3 top-3 flex items-center gap-1.5 bg-black/60 backdrop-blur-md px-3 py-1.5 rounded-full text-white">
-                                  <Lock className="h-3.5 w-3.5" />
-                                  <span className="text-[11px] font-bold uppercase tracking-wider">Premium</span>
-                                </div>
-                              )}
+                              {/* Badges */}
+                              <div className="absolute inset-x-4 top-4 flex justify-between items-start">
+                                {videoIsPaid && !isSubscribed ? (
+                                  <div className="flex items-center gap-2 bg-amber-500 text-black px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-tighter shadow-lg">
+                                    <Lock className="h-3 w-3" />
+                                    Premium
+                                  </div>
+                                ) : (
+                                  <div className="bg-emerald-500/90 backdrop-blur-md text-white px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-tighter shadow-lg">
+                                    Unlock
+                                  </div>
+                                )}
 
-                              {/* Duration */}
-                              {formatDuration(video.duration) && (
-                                <div className="absolute bottom-3 right-3 flex items-center gap-1.5 bg-black/50 backdrop-blur-md text-white text-xs font-medium px-3 py-1.5 rounded-full">
-                                  <Clock className="h-3 w-3" />
-                                  {formatDuration(video.duration)}
-                                </div>
-                              )}
-
-                              {/* Category badge */}
-                              {video.category && (
-                                <div className="absolute top-3 right-3">
-                                  <span className="bg-white/90 dark:bg-black/60 dark:backdrop-blur-md dark:text-white text-[hsl(155,40%,12%)] text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-widest shadow-sm">
+                                {video.category && (
+                                  <div className="bg-white/10 backdrop-blur-md border border-white/20 text-white px-2 py-1 rounded-md text-[9px] font-bold uppercase tracking-widest">
                                     {video.category}
-                                  </span>
+                                  </div>
+                                )}
+                              </div>
+
+                              {/* Duration info */}
+                              <div className="absolute bottom-4 left-4 flex items-center gap-2 text-white/90">
+                                <div className="p-1 px-2 rounded-md bg-black/40 backdrop-blur-sm border border-white/10 text-[10px] font-bold flex items-center gap-1.5">
+                                  <Clock className="h-3 w-3" />
+                                  {formatDuration(video.duration) || "Full Class"}
                                 </div>
-                              )}
+                              </div>
                             </div>
 
-                            {/* Content */}
-                            <div className="p-5">
-                              <div className="flex items-center justify-between mb-2">
-                                <p className="text-[11px] font-bold text-primary uppercase tracking-[0.15em]">
-                                  {[video.instructor, video.category].filter(Boolean).join(" · ") || "Yoga Class"}
+                            {/* Info Content */}
+                            <div className="p-6 flex flex-col flex-1">
+                              <div className="flex-1">
+                                <h3 className="font-serif text-xl font-bold leading-tight mb-2 group-hover:text-primary transition-colors line-clamp-2">
+                                  {video.title}
+                                </h3>
+                                <p className="text-muted-foreground text-sm line-clamp-2 mb-4 font-light">
+                                  {video.description || "Join us for this transformative yoga session designed to balance mind and body."}
                                 </p>
-                                <button
-                                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
-                                  className="text-muted-foreground hover:text-rose-500 transition-all duration-300 hover:scale-125 active:scale-90"
-                                >
-                                  <Heart className="h-4 w-4" />
-                                </button>
                               </div>
-                              <h3 className="font-serif text-lg font-bold leading-snug group-hover:text-primary transition-colors duration-300 mb-3">
-                                {video.title}
-                              </h3>
-                              {video.instructor && (
+
+                              <div className="flex items-center justify-between mt-4 pt-4 border-t border-border/50">
                                 <div className="flex items-center gap-2">
-                                  <div className="w-6 h-6 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center ring-1 ring-border/30">
-                                    <span className="text-[9px] font-bold text-primary">{video.instructor[0]}</span>
+                                  <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center ring-2 ring-background shadow-sm overflow-hidden">
+                                    <span className="text-[10px] font-bold text-muted-foreground">{video.instructor ? video.instructor[0] : "Y"}</span>
                                   </div>
-                                  <span className="text-xs text-muted-foreground">with <span className="font-medium text-foreground/70">{video.instructor}</span></span>
+                                  <div>
+                                    <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest">Instructor</p>
+                                    <p className="text-xs font-bold text-foreground/90">{video.instructor || "Yoga Academy"}</p>
+                                  </div>
                                 </div>
-                              )}
-                              {isPaid(video) && !isSubscribed && (
-                                <Button asChild className="mt-4 w-full rounded-full h-10 font-bold bg-[hsl(71,95%,60%)] text-[hsl(155,40%,12%)] hover:bg-[hsl(71,95%,55%)]" size="sm" onClick={(e) => e.stopPropagation()}>
-                                  <Link to="/pricing" onClick={(e) => e.stopPropagation()}>Subscribe to Unlock</Link>
-                                </Button>
-                              )}
+                                <div className="h-8 w-8 rounded-full flex items-center justify-center text-muted-foreground hover:text-rose-500 transition-colors">
+                                  <Heart className="h-4 w-4" />
+                                </div>
+                              </div>
                             </div>
                           </div>
                         </Link>
@@ -289,13 +294,16 @@ const FreeVideos = () => {
               </div>
 
               {filtered.length === 0 && (
-                <div className="py-24 text-center">
-                  <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mx-auto mb-6">
-                    <Search className="h-7 w-7 text-muted-foreground" />
+                <div className="py-32 text-center animate-in fade-in zoom-in duration-500">
+                  <div className="w-20 h-20 rounded-full bg-muted/50 flex items-center justify-center mx-auto mb-6 border border-dashed border-border/60">
+                    <Search className="h-8 w-8 text-muted-foreground/50" />
                   </div>
-                  <p className="text-muted-foreground text-lg">No videos found matching your filters.</p>
-                  <Button variant="outline" className="mt-4 rounded-full" onClick={() => { setSearch(""); setSelectedCategory("All"); }}>
-                    Clear Filters
+                  <h3 className="text-xl font-bold mb-2">No matching sessions</h3>
+                  <p className="text-muted-foreground max-w-sm mx-auto mb-8 font-light">
+                    We couldn't find any videos matching your current filters. Try adjusting your search or category.
+                  </p>
+                  <Button variant="outline" className="rounded-xl px-8 h-12 font-bold" onClick={() => { setSearch(""); setSelectedCategory("All"); }}>
+                    Reset All Filters
                   </Button>
                 </div>
               )}
