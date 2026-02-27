@@ -78,7 +78,7 @@ const About = () => {
       {/* Hero */}
       <section className="relative pt-32 pb-24 overflow-hidden">
         <div className="absolute inset-0 bg-primary dark:bg-card" />
-        <div className="absolute top-0 right-0 w-96 h-96 bg-[hsl(71,95%,60%)]/5 rounded-full blur-[120px]" />
+        <div className="absolute top-0 right-0 w-96 h-96 bg-[hsl(221,83%,53%)]/5 rounded-full blur-[120px]" />
         <div className="absolute bottom-0 left-0 w-80 h-80 bg-white/3 rounded-full blur-[100px]" />
 
         <div className="max-w-5xl mx-auto px-6 relative z-10 text-center">
@@ -86,7 +86,7 @@ const About = () => {
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="inline-flex items-center gap-2 text-[hsl(71,95%,60%)] text-xs font-bold tracking-[0.3em] uppercase mb-6"
+            className="inline-flex items-center gap-2 text-[hsl(221,83%,53%)] text-xs font-bold tracking-[0.3em] uppercase mb-6"
           >
             <Sparkles className="h-3.5 w-3.5" /> OUR STORY
           </motion.span>
@@ -98,7 +98,7 @@ const About = () => {
           >
             Amplifying Lives
             <br />
-            <span className="text-[hsl(71,95%,60%)] italic">Through Yoga</span>
+            <span className="text-[hsl(221,83%,53%)] italic">Through Yoga</span>
           </motion.h1>
           <motion.p
             initial={{ opacity: 0, y: 20 }}
@@ -122,7 +122,7 @@ const About = () => {
           >
             {stats.map((s, i) => (
               <div key={i} className="text-center">
-                <p className="text-3xl md:text-4xl font-bold text-[hsl(71,95%,60%)] dark:text-primary mb-1">{s.value}</p>
+                <p className="text-3xl md:text-4xl font-bold text-[hsl(221,83%,53%)] dark:text-primary mb-1">{s.value}</p>
                 <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">{s.label}</p>
               </div>
             ))}
@@ -139,7 +139,7 @@ const About = () => {
             viewport={{ once: true }}
             transition={{ duration: 0.7 }}
           >
-            <span className="text-[hsl(71,95%,60%)] dark:text-primary text-xs font-bold tracking-[0.3em] uppercase block mb-4">
+            <span className="text-[hsl(221,83%,53%)] dark:text-primary text-xs font-bold tracking-[0.3em] uppercase block mb-4">
               OUR MISSION
             </span>
             <h2 className="text-3xl md:text-5xl font-bold mb-6 leading-tight">
@@ -151,7 +151,7 @@ const About = () => {
               {missionText}
             </p>
             <Link to="/free-videos">
-              <Button className="rounded-full bg-[hsl(71,95%,60%)] text-[hsl(155,40%,12%)] hover:bg-[hsl(71,95%,55%)] px-8 h-12 font-bold transition-all duration-300 hover:scale-105 active:scale-95">
+              <Button className="rounded-full bg-[hsl(221,83%,53%)] text-[hsl(222,47%,12%)] hover:bg-[hsl(221,83%,48%)] px-8 h-12 font-bold transition-all duration-300 hover:scale-105 active:scale-95">
                 Explore Classes <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </Link>
@@ -179,7 +179,7 @@ const About = () => {
               transition={{ delay: 0.5 }}
               className="absolute -bottom-6 -left-6 bg-card rounded-2xl border border-border/50 shadow-lg p-5 max-w-[200px]"
             >
-              <p className="text-3xl font-bold text-[hsl(71,95%,60%)] dark:text-primary mb-1">5+ yrs</p>
+              <p className="text-3xl font-bold text-[hsl(221,83%,53%)] dark:text-primary mb-1">5+ yrs</p>
               <p className="text-xs text-muted-foreground">Helping people find balance through yoga</p>
             </motion.div>
           </motion.div>
@@ -196,7 +196,7 @@ const About = () => {
             variants={staggerContainer}
             className="text-center mb-16"
           >
-            <motion.span variants={fadeUp} custom={0} className="text-[hsl(71,95%,60%)] dark:text-primary text-xs font-bold tracking-[0.3em] uppercase block mb-4">
+            <motion.span variants={fadeUp} custom={0} className="text-[hsl(221,83%,53%)] dark:text-primary text-xs font-bold tracking-[0.3em] uppercase block mb-4">
               OUR VALUES
             </motion.span>
             <motion.h2 variants={fadeUp} custom={1} className="text-3xl md:text-5xl font-bold">
@@ -240,7 +240,7 @@ const About = () => {
               variants={staggerContainer}
               className="text-center mb-16"
             >
-              <motion.span variants={fadeUp} custom={0} className="text-[hsl(71,95%,60%)] dark:text-primary text-xs font-bold tracking-[0.3em] uppercase block mb-4">
+              <motion.span variants={fadeUp} custom={0} className="text-[hsl(221,83%,53%)] dark:text-primary text-xs font-bold tracking-[0.3em] uppercase block mb-4">
                 OUR PEOPLE
               </motion.span>
               <motion.h2 variants={fadeUp} custom={1} className="text-3xl md:text-5xl font-bold">
@@ -280,7 +280,7 @@ const About = () => {
       {/* CTA */}
       <section className="py-28 relative overflow-hidden">
         <div className="absolute inset-0 bg-primary dark:bg-card" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full bg-[hsl(71,95%,60%)]/5 blur-[200px]" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full bg-[hsl(221,83%,53%)]/5 blur-[200px]" />
 
         <div className="max-w-4xl mx-auto px-6 relative z-10 text-center text-primary-foreground dark:text-foreground">
           <motion.h2
@@ -308,7 +308,7 @@ const About = () => {
             transition={{ duration: 0.6, delay: 0.25 }}
           >
             <Link to="/pricing">
-              <Button size="lg" className="rounded-full bg-[hsl(71,95%,60%)] text-[hsl(155,40%,12%)] hover:bg-[hsl(71,95%,55%)] px-10 h-14 text-base font-bold shadow-[0_0_40px_rgba(183,237,70,0.25)] transition-all duration-300 hover:scale-105 active:scale-95">
+              <Button size="lg" className="rounded-full bg-[hsl(221,83%,53%)] text-[hsl(222,47%,12%)] hover:bg-[hsl(221,83%,48%)] px-10 h-14 text-base font-bold shadow-[0_0_40px_rgba(59,130,246,0.25)] transition-all duration-300 hover:scale-105 active:scale-95">
                 Start Free Trial
               </Button>
             </Link>
