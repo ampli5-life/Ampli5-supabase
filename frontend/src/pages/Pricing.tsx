@@ -114,7 +114,7 @@ const Pricing = () => {
       {/* Hero */}
       <section className="relative pt-32 pb-20 overflow-hidden">
         <div className="absolute inset-0 bg-primary dark:bg-card" />
-        <div className="absolute top-0 right-0 w-96 h-96 bg-[hsl(71,95%,60%)]/5 rounded-full blur-[120px]" />
+        <div className="absolute top-0 right-0 w-96 h-96 bg-[hsl(221,83%,53%)]/5 rounded-full blur-[120px]" />
         <div className="absolute bottom-0 left-0 w-80 h-80 bg-white/3 rounded-full blur-[100px]" />
 
         <div className="max-w-5xl mx-auto px-6 relative z-10 text-center">
@@ -152,15 +152,15 @@ const Pricing = () => {
             {plans.map((plan, i) => (
               <motion.div key={plan.id} custom={i} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}>
                 <Card className={`relative flex h-full flex-col border-2 rounded-3xl overflow-hidden card-hover ${plan.popular
-                    ? "border-[hsl(71,95%,60%)] shadow-lg dark:shadow-[0_0_30px_rgba(183,237,70,0.08)]"
+                    ? "border-[hsl(221,83%,53%)] shadow-lg dark:shadow-[0_0_30px_rgba(59,130,246,0.08)]"
                     : "border-border/50 shadow-sm"
                   }`}>
                   {plan.popular && (
-                    <div className="absolute -top-px left-0 right-0 h-1 bg-gradient-to-r from-[hsl(71,95%,60%)] via-[hsl(71,95%,50%)] to-[hsl(71,95%,60%)]" />
+                    <div className="absolute -top-px left-0 right-0 h-1 bg-gradient-to-r from-[hsl(221,83%,53%)] via-[hsl(221,83%,43%)] to-[hsl(221,83%,53%)]" />
                   )}
                   {plan.popular && (
                     <div className="absolute top-4 right-4">
-                      <span className="inline-flex items-center gap-1.5 bg-[hsl(71,95%,60%)] text-[hsl(155,40%,12%)] text-[11px] font-bold px-3 py-1.5 rounded-full uppercase tracking-wider">
+                      <span className="inline-flex items-center gap-1.5 bg-[hsl(221,83%,53%)] text-[hsl(222,47%,12%)] text-[11px] font-bold px-3 py-1.5 rounded-full uppercase tracking-wider">
                         <Crown className="h-3 w-3" /> Best Value
                       </span>
                     </div>
@@ -177,8 +177,8 @@ const Pricing = () => {
                     <ul className="space-y-4">
                       {plan.features.map((f) => (
                         <li key={f} className="flex items-center gap-3 text-sm">
-                          <div className="w-5 h-5 rounded-full bg-[hsl(71,95%,60%)]/15 flex items-center justify-center shrink-0">
-                            <Check className="h-3 w-3 text-[hsl(71,95%,60%)] dark:text-primary" />
+                          <div className="w-5 h-5 rounded-full bg-[hsl(221,83%,53%)]/15 flex items-center justify-center shrink-0">
+                            <Check className="h-3 w-3 text-[hsl(221,83%,53%)] dark:text-primary" />
                           </div>
                           {f}
                         </li>
@@ -188,7 +188,7 @@ const Pricing = () => {
                   <CardFooter className="px-8 pb-8">
                     <Button
                       className={`w-full rounded-full h-12 font-bold transition-all duration-300 hover:scale-[1.02] active:scale-95 ${plan.popular
-                          ? "bg-[hsl(71,95%,60%)] text-[hsl(155,40%,12%)] hover:bg-[hsl(71,95%,55%)] shadow-md"
+                          ? "bg-[hsl(221,83%,53%)] text-[hsl(222,47%,12%)] hover:bg-[hsl(221,83%,48%)] shadow-md"
                           : ""
                         }`}
                       variant={plan.popular ? "default" : "outline"}
@@ -221,7 +221,7 @@ const Pricing = () => {
               transition={{ duration: 0.6 }}
               className="text-center mb-14"
             >
-              <span className="text-[hsl(71,95%,60%)] dark:text-primary text-xs font-bold tracking-[0.3em] uppercase block mb-4">
+              <span className="text-[hsl(221,83%,53%)] dark:text-primary text-xs font-bold tracking-[0.3em] uppercase block mb-4">
                 <Sparkles className="h-4 w-4 inline mr-2" />PREMIUM CONTENT
               </span>
               <h2 className="font-serif text-3xl md:text-5xl font-bold mb-3">Member Exclusives</h2>
@@ -274,15 +274,15 @@ const Pricing = () => {
                               opacity: hoveredId === video.id ? 1 : 0,
                             }}
                             transition={{ duration: 0.3 }}
-                            className="w-14 h-14 rounded-full bg-[hsl(71,95%,60%)]/90 flex items-center justify-center shadow-2xl backdrop-blur-sm"
+                            className="w-14 h-14 rounded-full bg-[hsl(221,83%,53%)]/90 flex items-center justify-center shadow-2xl backdrop-blur-sm"
                           >
-                            <Lock className="h-5 w-5 text-[hsl(155,40%,12%)]" />
+                            <Lock className="h-5 w-5 text-[hsl(222,47%,12%)]" />
                           </motion.div>
                         </div>
 
                         {/* Premium badge */}
                         <div className="absolute left-3 top-3">
-                          <span className="inline-flex items-center gap-1.5 bg-[hsl(71,95%,60%)] text-[hsl(155,40%,12%)] text-[10px] font-bold px-3 py-1.5 rounded-full uppercase tracking-widest shadow-sm">
+                          <span className="inline-flex items-center gap-1.5 bg-[hsl(221,83%,53%)] text-[hsl(222,47%,12%)] text-[10px] font-bold px-3 py-1.5 rounded-full uppercase tracking-widest shadow-sm">
                             <Crown className="h-3 w-3" /> Premium
                           </span>
                         </div>
@@ -298,7 +298,7 @@ const Pricing = () => {
                         {/* Category */}
                         {video.category && (
                           <div className="absolute top-3 right-3">
-                            <span className="bg-white/90 dark:bg-black/60 dark:backdrop-blur-md dark:text-white text-[hsl(155,40%,12%)] text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-widest shadow-sm">
+                            <span className="bg-white/90 dark:bg-black/60 dark:backdrop-blur-md dark:text-white text-[hsl(222,47%,12%)] text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-widest shadow-sm">
                               {video.category}
                             </span>
                           </div>
