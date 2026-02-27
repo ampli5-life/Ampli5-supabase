@@ -9,8 +9,15 @@ interface GoogleSignInButtonProps {
 export function GoogleSignInButton({ onSuccess, redirectTo }: GoogleSignInButtonProps = {}) {
   const { signInWithGoogleOAuthRedirect } = useAuth();
 
-  const handleClick = () => {
-    void signInWithGoogleOAuthRedirect(redirectTo);
+  const handleClick = async () => {
+    const { error } = await signInWithGoogleOAuthRedirect(redirectTo);
+    if (error) {
+      if (typeof window !== "undefined" && (window as any).sonner) {
+        // Just rely on a standard dispatch event since we might not have `toast` imported
+        console.error("Failed to start Google Auth:", error);
+      }
+      return;
+    }
     onSuccess?.();
   };
 

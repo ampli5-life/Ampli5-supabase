@@ -26,7 +26,7 @@ interface AuthContextValue {
   signIn: (email: string, password: string) => Promise<{ error: { message: string } | null }>;
   signUp: (email: string, password: string, fullName: string) => Promise<{ error: { message: string } | null }>;
   signInWithGoogle: (idToken: string) => Promise<{ error: { message: string } | null }>;
-  signInWithGoogleOAuthRedirect: (redirectTo?: string) => Promise<void>;
+  signInWithGoogleOAuthRedirect: (redirectTo?: string) => Promise<{ error: Error | null }>;
   signOut: () => void;
   updateProfile: (updates: Partial<Profile>) => void;
   isSubscribed: boolean;
@@ -348,11 +348,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 
   const signInWithGoogleOAuthRedirect = useCallback(async (customRedirect?: string) => {
-    const redirectTo = customRedirect || window.location.href;
-    await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: { redirectTo },
-    });
+    try {
+      const redirectTo = customRedirect || window.location.href;
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: { redirectTo },
+      });
+      if (error) {
+        console.error("Google login error:", error);
+        return { error };
+      }
+      return { error: null };
+    } catch (err: unknown) {
+      console.error("Google login threw an error:", err);
+      return { error: err as Error };
+    }
   }, []);
 
   const signOut = useCallback(() => {
