@@ -38,7 +38,8 @@ const App = () => (
             <Route path="/subscription-success" element={<SubscriptionSuccess />} />
 
             <Route element={<Layout />}>
-              {/* Public: login, register, legal pages */}
+              {/* Public: login, register, legal, and home pages */}
+              <Route path="/" element={<Index />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
               <Route path="/terms" element={<Terms />} />
@@ -46,7 +47,6 @@ const App = () => (
               <Route path="/refund-policy" element={<RefundPolicy />} />
 
               {/* Protected: all content pages require login */}
-              <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
               <Route path="/about" element={<ProtectedRoute><About /></ProtectedRoute>} />
               <Route path="/pricing" element={<ProtectedRoute><Pricing /></ProtectedRoute>} />
               <Route path="/free-videos" element={<ProtectedRoute><FreeVideos /></ProtectedRoute>} />
