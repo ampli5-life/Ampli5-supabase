@@ -125,7 +125,7 @@ const FreeVideoDetail = () => {
       {/* Hero Section for Player */}
       <div className="bg-slate-900 lg:py-10 py-4 shadow-2xl relative overflow-hidden">
         {/* Subtle background glow */}
-        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/5 blur-[120px] rounded-full -translate-y-1/2 translate-x-1/2" />
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[hsl(199,89%,48%)]/5 blur-[120px] rounded-full -translate-y-1/2 translate-x-1/2" />
         <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-blue-500/5 blur-[100px] rounded-full translate-y-1/2 -translate-x-1/2" />
 
         <div className="container max-w-7xl mx-auto px-4 lg:px-8 relative z-10">

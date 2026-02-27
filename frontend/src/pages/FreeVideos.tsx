@@ -100,7 +100,7 @@ const FreeVideos = () => {
       {/* Hero Header */}
       <section className="relative overflow-hidden bg-slate-900 py-20 lg:py-28 shadow-2xl">
         {/* Animated background elements */}
-        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-primary/10 blur-[150px] rounded-full -translate-y-1/2 translate-x-1/2 opacity-50" />
+        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-[hsl(199,89%,48%)]/10 blur-[150px] rounded-full -translate-y-1/2 translate-x-1/2 opacity-50" />
         <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-blue-500/10 blur-[120px] rounded-full translate-y-1/2 -translate-x-1/2 opacity-50" />
 
         <div className="max-w-7xl mx-auto px-6 relative z-10 text-center">
@@ -109,12 +109,12 @@ const FreeVideos = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
           >
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-[10px] uppercase font-bold tracking-widest mb-6">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[hsl(199,89%,48%)]/10 border border-[hsl(199,89%,48%)]/20 text-[hsl(199,89%,48%)] text-[10px] uppercase font-bold tracking-widest mb-6">
               <Play className="h-3 w-3 fill-current" />
               Experience Wellness
             </div>
             <h1 className="font-serif text-5xl md:text-7xl font-bold text-white tracking-tight leading-tight mb-6">
-              Our Video <span className="text-primary italic">Library</span>
+              Our Video <span className="text-[hsl(199,89%,48%)] italic">Library</span>
             </h1>
             <p className="text-slate-400 text-lg md:text-xl max-w-2xl mx-auto font-light leading-relaxed">
               From invigorating flows to deep meditations. Explore our curated collection
