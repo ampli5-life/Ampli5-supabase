@@ -415,11 +415,20 @@ async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> 
   if (method === "PUT" || method === "PATCH") {
     const body = JSON.parse((options as { body: string }).body ?? "{}") as Record<string, unknown>;
     if (!key) throw new Error("ID required for update");
-    const { id: _id, admin, ...rest } = body;
+
+    // Explicitly destructure out admin, isAdmin, id, _id to prevent them polluting our updates block
+    const { id: _id, admin, isAdmin, ...rest } = body;
     let updates: Record<string, unknown> = { ...rest };
+
     if (table === "schedules") updates = mapScheduleBody(updates);
-    if (table === "profiles" && typeof admin === "boolean") {
-      (updates as Record<string, unknown>).is_admin = admin;
+
+    // Convert boolean admin props to correct DB column name `is_admin`
+    if (table === "profiles") {
+      if (typeof admin === "boolean") {
+        updates.is_admin = admin;
+      } else if (typeof isAdmin === "boolean") {
+        updates.is_admin = isAdmin;
+      }
     }
 
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
