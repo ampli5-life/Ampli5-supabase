@@ -15,6 +15,7 @@ try {
   const keysToRemove: string[] = [];
   for (let i = 0; i < localStorage.length; i++) {
     const key = localStorage.key(i);
+    // Ignore the new auth token so we only rip out the old ones that were causing lock conflicts
     if (key && key.startsWith("sb-") && key.endsWith("-auth-token") && !key.includes(projectRef)) {
       keysToRemove.push(key);
     }
@@ -26,7 +27,7 @@ try {
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
-    storageKey: `sb-${projectRef}-auth-token`,
+    storageKey: `sb-${projectRef}-auth-token-v2`,
     autoRefreshToken: true,
     persistSession: true,
     detectSessionInUrl: true,
@@ -47,7 +48,7 @@ export function getAnonKey(): string {
  */
 export function getAccessTokenFromStorage(): string | null {
   try {
-    const raw = localStorage.getItem(`sb-${projectRef}-auth-token`);
+    const raw = localStorage.getItem(`sb-${projectRef}-auth-token-v2`);
     if (!raw) return null;
     const parsed = JSON.parse(raw);
     return parsed?.access_token ?? null;
